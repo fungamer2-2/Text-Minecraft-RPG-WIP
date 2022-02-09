@@ -120,7 +120,7 @@ class Player:
 		else:
 			self.inventory[item] = amount
 		
-print("MINCERAFT" if one_in(10000) else "MINECRAFT")
+print("MINCERAFT" if one_in(10000) else "MINECRAFT") #Extremely rare easter egg ;D
 print()
 choice = choice_input("Play", "Quit")
 if choice == 2:
