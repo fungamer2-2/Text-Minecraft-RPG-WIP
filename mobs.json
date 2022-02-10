@@ -16,5 +16,14 @@
 		"name": "Chicken",
 		"HP": 20,
 		"behavior": "passive"
+	},
+	{
+		"name": "Zombie",
+		"HP": 20,
+		"night_mob": true,
+		"behavior": "hostile",
+		"death_drops": {
+			"rotten flesh": [0, 2]
+		}
 	}
 ]
