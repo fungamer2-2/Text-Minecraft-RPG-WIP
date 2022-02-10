@@ -1,5 +1,6 @@
 import random, json
 from enum import Enum
+from termcolor import cprint
 
 #A text-based RPG game based on Minecraft
 
@@ -27,11 +28,12 @@ mobs_dict = json.load(open("mobs.json"))
 
 class MobType:
 	
-	def __init__(self, name, max_hp, behavior: MobBehaviorType, death_drops):
+	def __init__(self, name, max_hp, behavior: MobBehaviorType, death_drops, night_mob):
 		self.name = name
 		self.hp = max_hp
 		self.behavior = behavior
 		self.death_drops = death_drops
+		self.night_mob = night_mob
 		
 	@staticmethod
 	def from_dict(d):
@@ -47,7 +49,8 @@ class MobType:
 		else:
 			raise ValueError(f"Invalid behavior type {b!r}")
 		death_drops = d.get("death_drops", {})
-		return MobType(name, HP, behavior, death_drops)
+		night_mob = d.get("night_mob", False)
+		return MobType(name, HP, behavior, death_drops, night_mob)
 
 mob_types = {}
 
@@ -86,11 +89,13 @@ class Mob:
 					amount = r
 				else:
 					raise TypeError("Amount must be an int or a 2-item list")
-				got[drop] = amount
+				if amount > 0:
+					got[drop] = amount
 			print("You got: ")
 			for item in got:
 				print(f"{got[item]}x {item}")
 				player.add_item(item, got[item])
+				
 class Player:
 	
 	def __init__(self):
@@ -102,7 +107,7 @@ class Player:
 	def damage(self, amount, death_reason=None):
 		if amount <= 0:
 			return
-		print(f"You take {amount} damage!")
+		cprint(f"You take {amount} damage!", "red")
 		self.HP -= amount
 		if self.HP <= 0:
 			print("You died!")
@@ -111,8 +116,19 @@ class Player:
 			exit()
 		print(f"HP: {self.HP}/20")
 		
-	def gain_health(self, amount):
-		self.HP += amount
+	def heal(self, amount):
+		if amount <= 0:
+			return
+		old_hp = self.HP
+		self.HP = min(self.HP + amount, 20)
+		healed_by = self.HP - old_hp
+		if healed_by > 0:
+			cprint(f"You are healed by {healed_by} HP.", "green")
+			print(f"HP: {self.HP}/20")
+	def tick(self):
+		if self.HP < 20:
+			if self.hunger == 20 or (self.hunger >= 17 and one_in(8)):
+				self.heal(1) #TODO: Make this decrease saturation
 		
 	def add_item(self, item, amount=1):
 		if item in self.inventory:
@@ -120,7 +136,7 @@ class Player:
 		else:
 			self.inventory[item] = amount
 		
-print("MINCERAFT" if one_in(10000) else "MINECRAFT") #Extremely rare easter egg ;D
+print("MINCERAFT" if one_in(10000) else "MINECRAFT")
 print()
 choice = choice_input("Play", "Quit")
 if choice == 2:
@@ -130,15 +146,17 @@ player = Player()
 
 passive_mob_types = list(filter(lambda typ: mob_types[typ].behavior == MobBehaviorType.passive, mob_types))
 while True:
+	player.tick()
 	choice = choice_input("Explore", "Inventory")
 	if choice == 1:
 		print("You explore for a while.")
 		if one_in(3):
 			mob = Mob.new_mob(random.choice(passive_mob_types))
+			mob = Mob.new_mob("Zombie")
 			mob_name = mob.name.lower()
-			print(f"You found a {mob_name} while exploring.")
+			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 			if mob.behavior == MobBehaviorType.hostile and one_in(2):
-				print("The {mob_name} attacks you!")
+				cprint(f"The {mob_name} attacks you!", "red")
 				player.damage(2)
 			choice = choice_input("Attack", "Flee" if mob.behavior == MobBehaviorType.hostile else "Ignore")
 			if choice == 1:
@@ -146,20 +164,23 @@ while True:
 				while True:
 					if run > 0:
 						run -= 1
+					missed = False
 					if (run > 0 and one_in(3)) or one_in(5):
 						print(f"You miss the {mob_name}.")
+						missed = True
 					else:
 						print(f"You attack the {mob_name}.")
-						mob.damage(random.randint(1, 3), player) #TODO: Add different types of swords, each doing different amounts of damage
+						mob.damage(random.randint(2, 4), player) #TODO: Add different types of swords, each doing different amounts of damage
 						if mob.HP <= 0:
 							break
 						if mob.behavior == MobBehaviorType.passive:
 							if not one_in(3) and run == 0:
 								print(f"The {mob_name} starts running away.")
 								run += random.randint(3, 5)
-						else:
-							print("The {mob_name} attacks you!")
-							player.damage(random.randint(1, 4)) #TODO: Unhardcode this value and make it depend on the type of mob
+					if mob.behavior != MobBehaviorType.passive and (not missed or one_in(2)):
+						print(f"The {mob_name} attacks you!")
+						player.damage(random.randint(1, 4)) #TODO: Unhardcode this value and make it depend on the type of mob
+					player.tick()
 					choice = choice_input("Attack", "Ignore" if mob.behavior == MobBehaviorType.passive else "Flee")
 					if choice == 2:
 						break
