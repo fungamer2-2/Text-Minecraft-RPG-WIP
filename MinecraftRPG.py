@@ -102,6 +102,7 @@ class Player:
 	def __init__(self):
 		self.HP = 20
 		self.hunger = 20
+		self.food_exhaustion = 0
 		self.saturation = 5
 		self.inventory = {}
 		
@@ -119,17 +120,33 @@ class Player:
 		
 	def heal(self, amount):
 		if amount <= 0:
-			return
+			return False
 		old_hp = self.HP
 		self.HP = min(self.HP + amount, 20)
 		healed_by = self.HP - old_hp
 		if healed_by > 0:
 			cprint(f"You are healed by {healed_by} HP.", "green")
 			print(f"HP: {self.HP}/20")
+			return True
+		return False
+	 
 	def tick(self):
 		if self.HP < 20:
-			if self.hunger == 20 or (self.hunger >= 17 and one_in(8)):
-				self.heal(1)
+			if (self.hunger == 20 or (self.hunger >= 17 and one_in(8))) and self.heal(1):
+				self.mod_food_exhaustion(6)
+	
+	def mod_food_exhaustion(self, amount):
+		self.food_exhaustion += amount
+		if self.food_exhaustion >= 4:
+			if self.saturation == 0:
+				self.hunger -= 1
+			else:
+				self.saturation -= 1
+			self.food_exhaustion = 0
+			if player.saturation == 0:
+				cprint(f"Hunger: {player.hunger}/20", "yellow")
+			else:
+				print(f"Hunger: {player.hunger}/20")		
 		
 	def add_item(self, item, amount=1):
 		if item in self.inventory:
@@ -148,11 +165,17 @@ player = Player()
 passive_mob_types = list(filter(lambda typ: mob_types[typ].behavior == MobBehaviorType.passive, mob_types))
 while True:
 	player.tick()
+	print(f"HP: {player.HP}/20")
+	if player.saturation == 0:
+		cprint(f"Hunger: {player.hunger}/20", "yellow")
+	else:
+		print(f"Hunger: {player.hunger}/20")
 	choice = choice_input("Explore", "Inventory")
 	if choice == 1:
 		print("You explore for a while.")
 		if one_in(3):
 			mob = Mob.new_mob(random.choice(passive_mob_types))
+			#mob = Mob.new_mob("Zombie")
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 			if mob.behavior == MobBehaviorType.hostile and one_in(2):
@@ -165,6 +188,7 @@ while True:
 					if run > 0:
 						run -= 1
 					missed = False
+					player.mod_food_exhaustion(0.1)
 					if (run > 0 and one_in(3)) or one_in(5):
 						print(f"You miss the {mob_name}.")
 						missed = True
