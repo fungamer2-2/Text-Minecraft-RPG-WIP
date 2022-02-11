@@ -2,6 +2,7 @@ import random, json
 from enum import Enum
 from termcolor import cprint
 
+
 #A text-based RPG game based on Minecraft
 
 def one_in(x):
@@ -128,7 +129,7 @@ class Player:
 	def tick(self):
 		if self.HP < 20:
 			if self.hunger == 20 or (self.hunger >= 17 and one_in(8)):
-				self.heal(1) #TODO: Make this decrease saturation
+				self.heal(1)
 		
 	def add_item(self, item, amount=1):
 		if item in self.inventory:
@@ -152,7 +153,6 @@ while True:
 		print("You explore for a while.")
 		if one_in(3):
 			mob = Mob.new_mob(random.choice(passive_mob_types))
-			mob = Mob.new_mob("Zombie")
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 			if mob.behavior == MobBehaviorType.hostile and one_in(2):
