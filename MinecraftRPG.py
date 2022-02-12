@@ -29,12 +29,13 @@ mobs_dict = json.load(open("mobs.json"))
 
 class MobType:
 	
-	def __init__(self, name, max_hp, behavior: MobBehaviorType, death_drops, night_mob):
+	def __init__(self, name, max_hp, behavior: MobBehaviorType, death_drops, night_mob, attack_strength):
 		self.name = name
 		self.hp = max_hp
 		self.behavior = behavior
 		self.death_drops = death_drops
 		self.night_mob = night_mob
+		self.attack_strength = attack_strength
 		
 	@staticmethod
 	def from_dict(d):
@@ -49,9 +50,12 @@ class MobType:
 			behavior = MobBehaviorType.hostile
 		else:
 			raise ValueError(f"Invalid behavior type {b!r}")
+		attack_strength = d.get("attack_strength")
+		if attack_strength is None and b != "passive":
+			raise ValueError("Non-passive mobs require an attack strength")
 		death_drops = d.get("death_drops", {})
 		night_mob = d.get("night_mob", False)
-		return MobType(name, HP, behavior, death_drops, night_mob)
+		return MobType(name, HP, behavior, death_drops, night_mob, attack_strength)
 
 mob_types = {}
 
@@ -60,16 +64,17 @@ for mob_dict in mobs_dict:
 	
 class Mob:
 	
-	def __init__(self, name, HP, behavior: MobBehaviorType, death_drops):
+	def __init__(self, name, HP, behavior: MobBehaviorType, death_drops, attack_strength):
 		self.name = name
 		self.HP = HP
 		self.behavior = behavior
 		self.death_drops = death_drops
+		self.attack_strength = attack_strength
 		
 	@staticmethod
 	def new_mob(typ: str):
 		typ = mob_types[typ]
-		return Mob(typ.name, typ.hp, typ.behavior, typ.death_drops)
+		return Mob(typ.name, typ.hp, typ.behavior, typ.death_drops, typ.attack_strength)
 	
 	def damage(self, amount, player):
 		self.HP -= amount
@@ -180,7 +185,7 @@ while True:
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 			if mob.behavior == MobBehaviorType.hostile and one_in(2):
 				cprint(f"The {mob_name} attacks you!", "red")
-				player.damage(2)
+				player.damage(mob.attack_strength)
 			choice = choice_input("Attack", "Flee" if mob.behavior == MobBehaviorType.hostile else "Ignore")
 			if choice == 1:
 				run = 0
@@ -203,7 +208,7 @@ while True:
 								run += random.randint(3, 5)
 					if mob.behavior != MobBehaviorType.passive and (not missed or one_in(2)):
 						print(f"The {mob_name} attacks you!")
-						player.damage(random.randint(1, 4)) #TODO: Unhardcode this value and make it depend on the type of mob
+						player.damage(mob.attack_strength)
 					player.tick()
 					choice = choice_input("Attack", "Ignore" if mob.behavior == MobBehaviorType.passive else "Flee")
 					if choice == 2:

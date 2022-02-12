@@ -22,6 +22,7 @@
 		"HP": 20,
 		"night_mob": true,
 		"behavior": "hostile",
+		"attack_strength": 5,
 		"death_drops": {
 			"rotten flesh": [0, 2]
 		}
