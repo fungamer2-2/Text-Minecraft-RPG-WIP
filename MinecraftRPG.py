@@ -5,6 +5,7 @@ from termcolor import cprint
 #A text-based RPG game based on Minecraft
 
 def one_in(x):
+	"Returns True with a probability of 1/x, otherwise returns False"
 	return x <= 1 or random.randint(1, x) == 1
 
 def choice_input(*choices):
