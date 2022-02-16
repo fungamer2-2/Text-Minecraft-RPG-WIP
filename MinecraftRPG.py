@@ -2,7 +2,6 @@ import random, json
 from enum import Enum
 from termcolor import cprint
 
-
 #A text-based RPG game based on Minecraft
 
 def one_in(x):
@@ -158,6 +157,18 @@ class Player:
 			self.inventory[item] += amount
 		else:
 			self.inventory[item] = amount
+			
+class Tool:
+	
+	def __init__(self, durability):
+		self.durability = durability
+		self.max_durability = durability
+		
+class Sword(Tool):
+		
+	def __init__(self, damage, durability):
+		super().__init__(damage)
+		self.damage = damage
 		
 print("MINCERAFT" if one_in(10000) else "MINECRAFT")
 print()
@@ -178,6 +189,7 @@ while True:
 	choice = choice_input("Explore", "Inventory")
 	if choice == 1:
 		print("You explore for a while.")
+		self.mod_food_exhaustion(0.001)
 		if one_in(3):
 			mob = Mob.new_mob(random.choice(passive_mob_types))
 			#mob = Mob.new_mob("Zombie")
