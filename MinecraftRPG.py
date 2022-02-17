@@ -170,7 +170,7 @@ class Sword(Tool):
 	def __init__(self, damage, durability):
 		super().__init__(damage)
 		self.damage = damage
-		
+
 print("MINCERAFT" if one_in(10000) else "MINECRAFT")
 print()
 choice = choice_input("Play", "Quit")
@@ -190,8 +190,8 @@ while True:
 	choice = choice_input("Explore", "Inventory")
 	if choice == 1:
 		print("You explore for a while.")
-		self.mod_food_exhaustion(0.001)
-		if one_in(3):
+		player.mod_food_exhaustion(0.001)
+		if one_in(4):
 			mob = Mob.new_mob(random.choice(passive_mob_types))
 			#mob = Mob.new_mob("Zombie")
 			mob_name = mob.name.lower()
@@ -226,6 +226,13 @@ while True:
 					choice = choice_input("Attack", "Ignore" if mob.behavior == MobBehaviorType.passive else "Flee")
 					if choice == 2:
 						break
+		elif one_in(3):
+		  explore_finds = [("Grass", 8), ("Dirt", 1), ("Wood", 2)]
+		  choices = [val[0] for val in explore_finds]
+		  weights = [val[1] for val in explore_finds]
+		  found = random.choices(choices, weights=weights)[0]
+		  print(f"You found 1x {found}")
+		  player.add_item(found)
 	elif choice == 2:
 		if len(player.inventory) == 0:
 			print("There is nothing in your inventory")
@@ -233,4 +240,3 @@ while True:
 			print("Your inventory:")
 			for item in player.inventory:
 				print(f"{player.inventory[item]}x {item}")
-		
