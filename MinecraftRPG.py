@@ -171,7 +171,7 @@ class Sword(Tool):
 		super().__init__(damage)
 		self.damage = damage
 
-print("MINCERAFT" if one_in(10000) else "MINECRAFT")
+print("MINCERAFT" if one_in(10000) else "MINECRAFT") #An extremely rare easter egg
 print()
 choice = choice_input("Play", "Quit")
 if choice == 2:
