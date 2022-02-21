@@ -9,7 +9,7 @@
 		"HP": 20,
 		"behavior": "passive",
 		"death_drops": {
-			"raw porkchop": [1, 3]
+			"raw porkchop": {"quantity": [1, 3]}
 		}
 	},
 	{
@@ -24,7 +24,7 @@
 		"behavior": "hostile",
 		"attack_strength": 5,
 		"death_drops": {
-			"rotten flesh": [0, 2]
+			"rotten flesh": {"quantity": [0, 2]}
 		}
 	},
 	{
@@ -34,7 +34,8 @@
 		"behavior": "hostile",
 		"attack_strength": 2,
 		"death_drops": {
-			"string": [0, 2]
+			"string": {"quantity": [0, 2]},
+			"spider eye": {"quantity": 1, "chance": [1, 3]}
 		}
 	}
 ]

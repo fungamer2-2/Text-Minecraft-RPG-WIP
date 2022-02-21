@@ -91,15 +91,18 @@ class Mob:
 			got = {}
 			for drop in self.death_drops:
 				r = self.death_drops[drop]
-				if isinstance(r, list):
-					assert len(r) == 2, "A range must have exactly one start and one end"
-					start, end = tuple(r)
+				assert isinstance(r, dict), f"Unexpected value '{r}'"
+				q = r["quantity"]
+				x, y = r.get("chance", [1, 1])
+				if isinstance(q, list):
+					assert len(q) == 2, "A range must have exactly one start and one end"
+					start, end = tuple(q)
 					amount = random.randint(start, end)
-				elif isinstance(r, int):
-					amount = r
+				elif isinstance(q, int):
+					amount = q
 				else:
 					raise TypeError("Amount must be an int or a 2-item list")
-				if amount > 0:
+				if amount > 0 and x_in_y(x, y):
 					got[drop] = amount
 			print("You got: ")
 			for item in got:
@@ -256,7 +259,6 @@ while True:
 					player.mod_food_exhaustion(0.1)
 					if run > 0 and one_in(4):
 						print(f"You miss the {mob_name} attacking it while it was fleeing.")
-						missed = True
 					else:
 						print(f"You attack the {mob_name}.")
 						mob.damage(random.randint(4, 6), player) #TODO: Add different types of swords, each doing different amounts of damage
