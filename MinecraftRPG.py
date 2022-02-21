@@ -8,6 +8,10 @@ def one_in(x):
 	"Returns True with a probability of 1/x, otherwise returns False"
 	return x <= 1 or random.randint(1, x) == 1
 
+def x_in_y(x, y):
+	"Returns True with a probability of x/y, otherwise returns False"
+	return random.uniform(0, y) < x
+
 def choice_input(*choices):
 	for index, choice in enumerate(choices):
 		print(f"{index + 1}. {choice}")
@@ -102,6 +106,34 @@ class Mob:
 				print(f"{got[item]}x {item}")
 				player.add_item(item, got[item])
 				
+class Time:
+	
+	def __init__(self):
+		self.mins = 0
+		self.secs = 0
+		
+	def is_night(self):
+		return self.mins >= 20
+	
+	def advance(self, secs):
+		was_night = self.is_night()
+		last_mins = self.mins
+		self.secs += secs
+		while self.secs >= 60:
+			self.mins += 1
+			self.secs -= 60
+		self.mins %= 40
+		is_night = self.is_night()
+		if was_night ^ is_night:
+			if is_night:
+				cprint("It is now nighttime", "blue")
+			else:
+				cprint("It is now daytime", "blue")
+		elif last_mins < 18 and self.mins >= 18:
+			cprint("The sun begins to set", "blue")
+		elif last_mins < 38 and self.mins >= 38:
+			cprint("The sun begins to come up", "blue")
+
 class Player:
 	
 	def __init__(self):
@@ -110,12 +142,14 @@ class Player:
 		self.food_exhaustion = 0
 		self.saturation = 5
 		self.inventory = {}
+		self.time = Time()
 		
 	def damage(self, amount, death_reason=None):
 		if amount <= 0:
 			return
 		cprint(f"You take {amount} damage!", "red")
 		self.HP -= amount
+		self.mod_food_exhaustion(0.1)
 		if self.HP <= 0:
 			print("You died!")
 			if death_reason:
@@ -139,6 +173,7 @@ class Player:
 		if self.HP < 20:
 			if (self.hunger == 20 or (self.hunger >= 17 and one_in(8))) and self.heal(1):
 				self.mod_food_exhaustion(6)
+		self.time.advance(0.5)
 	
 	def mod_food_exhaustion(self, amount):
 		self.food_exhaustion += amount
@@ -147,12 +182,15 @@ class Player:
 				self.hunger -= 1
 			else:
 				self.saturation -= 1
-			self.food_exhaustion = 0
-			if player.saturation == 0:
-				cprint(f"Hunger: {player.hunger}/20", "yellow")
-			else:
-				print(f"Hunger: {player.hunger}/20")		
-		
+			self.print_hunger()
+			self.food_exhaustion = 0		
+	
+	def print_hunger(self):
+		if self.saturation == 0:
+			cprint(f"Hunger: {self.hunger}/20", "yellow")
+		else:
+			print(f"Hunger: {self.hunger}/20")
+	
 	def add_item(self, item, amount=1):
 		if item in self.inventory:
 			self.inventory[item] += amount
@@ -180,6 +218,8 @@ if choice == 2:
 player = Player()
 
 passive_mob_types = list(filter(lambda typ: mob_types[typ].behavior == MobBehaviorType.passive, mob_types))
+night_mob_types = list(filter(lambda typ: mob_types[typ].night_mob, mob_types))
+
 while True:
 	player.tick()
 	print(f"HP: {player.HP}/20")
@@ -191,8 +231,14 @@ while True:
 	if choice == 1:
 		print("You explore for a while.")
 		player.mod_food_exhaustion(0.001)
-		if one_in(4):
-			mob = Mob.new_mob(random.choice(passive_mob_types))
+		player.time.advance(random.randint(10, 50))
+		mob_chance = 2 if player.time.is_night() else 4
+		if one_in(mob_chance):
+			if player.time.is_night():
+				choices = night_mob_types
+			else:
+				choices = passive_mob_types
+			mob = Mob.new_mob(random.choice(choices))
 			#mob = Mob.new_mob("Zombie")
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
@@ -205,21 +251,22 @@ while True:
 				while True:
 					if run > 0:
 						run -= 1
-					missed = False
+						if run == 0:
+							print(f"The {mob_name} stops running.")
 					player.mod_food_exhaustion(0.1)
-					if (run > 0 and one_in(3)) or one_in(5):
-						print(f"You miss the {mob_name}.")
+					if run > 0 and one_in(4):
+						print(f"You miss the {mob_name} attacking it while it was fleeing.")
 						missed = True
 					else:
 						print(f"You attack the {mob_name}.")
-						mob.damage(random.randint(2, 4), player) #TODO: Add different types of swords, each doing different amounts of damage
+						mob.damage(random.randint(4, 6), player) #TODO: Add different types of swords, each doing different amounts of damage
 						if mob.HP <= 0:
 							break
 						if mob.behavior == MobBehaviorType.passive:
 							if not one_in(3) and run == 0:
 								print(f"The {mob_name} starts running away.")
 								run += random.randint(3, 5)
-					if mob.behavior != MobBehaviorType.passive and (not missed or one_in(2)):
+					if mob.behavior != MobBehaviorType.passive and not one_in(3):
 						print(f"The {mob_name} attacks you!")
 						player.damage(mob.attack_strength)
 					player.tick()
@@ -227,12 +274,12 @@ while True:
 					if choice == 2:
 						break
 		elif one_in(3):
-		  explore_finds = [("Grass", 8), ("Dirt", 1), ("Wood", 2)]
-		  choices = [val[0] for val in explore_finds]
-		  weights = [val[1] for val in explore_finds]
-		  found = random.choices(choices, weights=weights)[0]
-		  print(f"You found 1x {found}")
-		  player.add_item(found)
+			explore_finds = [("Grass", 8), ("Dirt", 1), ("Wood", 2)]
+			choices = [val[0] for val in explore_finds]
+			weights = [val[1] for val in explore_finds]
+			found = random.choices(choices, weights=weights)[0]
+			print(f"You found 1x {found}")
+			player.add_item(found)
 	elif choice == 2:
 		if len(player.inventory) == 0:
 			print("There is nothing in your inventory")

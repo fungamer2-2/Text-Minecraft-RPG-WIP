@@ -26,5 +26,15 @@
 		"death_drops": {
 			"rotten flesh": [0, 2]
 		}
+	},
+	{
+		"name": "Spider",
+		"HP": 16,
+		"night_mob": true,
+		"behavior": "hostile",
+		"attack_strength": 2,
+		"death_drops": {
+			"string": [0, 2]
+		}
 	}
 ]
