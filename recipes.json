@@ -1,0 +1,6 @@
+{
+	"Wooden Plank": {
+		"quantity": 4,
+		"components": [ ["Wood", 1] ]
+	}
+}

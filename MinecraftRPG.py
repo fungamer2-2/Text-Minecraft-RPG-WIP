@@ -108,6 +108,8 @@ class Mob:
 			for item in got:
 				print(f"{got[item]}x {item}")
 				player.add_item(item, got[item])
+
+recipes = json.load(open("recipes.json"))
 				
 class Time:
 	
@@ -200,6 +202,20 @@ class Player:
 		else:
 			self.inventory[item] = amount
 			
+	def remove_item(self, item, amount):
+		if amount <= 0:
+			return
+		if item not in self.inventory or amount > self.inventory[item]:
+			raise ValueError("Tried to remove more of item than available in inventory")
+		self.inventory[item] -= amount
+		if self.inventory[item] <= 0:
+			del self.inventory[item]
+			
+	def has_item(self, item, amount=1):
+		if item not in self.inventory:
+			return False
+		return self.inventory[item] >= amount
+			
 class Tool:
 	
 	def __init__(self, durability):
@@ -230,12 +246,12 @@ while True:
 		cprint(f"Hunger: {player.hunger}/20", "yellow")
 	else:
 		print(f"Hunger: {player.hunger}/20")
-	choice = choice_input("Explore", "Inventory")
+	choice = choice_input("Explore", "Inventory", "Craft")
 	if choice == 1:
 		print("You explore for a while.")
 		player.mod_food_exhaustion(0.001)
 		player.time.advance(random.randint(10, 50))
-		mob_chance = 2 if player.time.is_night() else 4
+		mob_chance = 4 if player.time.is_night() else 8
 		if one_in(mob_chance):
 			if player.time.is_night():
 				choices = night_mob_types
@@ -275,8 +291,8 @@ while True:
 					choice = choice_input("Attack", "Ignore" if mob.behavior == MobBehaviorType.passive else "Flee")
 					if choice == 2:
 						break
-		elif one_in(3):
-			explore_finds = [("Grass", 8), ("Dirt", 1), ("Wood", 2)]
+		elif x_in_y(2, 5):
+			explore_finds = [("Grass", 8), ("Dirt", 1), ("Wood", 3)]
 			choices = [val[0] for val in explore_finds]
 			weights = [val[1] for val in explore_finds]
 			found = random.choices(choices, weights=weights)[0]
@@ -289,3 +305,31 @@ while True:
 			print("Your inventory:")
 			for item in player.inventory:
 				print(f"{player.inventory[item]}x {item}")
+	elif choice == 3:
+		craftable = []
+		for recipe in recipes:
+			info = recipes[recipe]
+			components = info["components"]
+			for component in components:
+				name = component[0]
+				amount = component[1]
+				if not player.has_item(name, amount):
+					break
+			else:
+				craftable.append((recipe, recipes[recipe]))
+		if len(craftable) == 0:
+			print("There are no items that you can craft")
+		else:
+			print("Items you can craft:")
+			for item in craftable:
+				name, info = item
+				quantity = info.get("quantity", 1)
+				string = f"{quantity}x {name} | Components: "
+				components = info["components"]
+				s = []
+				for c in components:
+					s.append(f"{c[1]}x {c[0]}")
+				string += ",".join(s)
+				print(string)
+				print()
+		print("Crafting is not yet complete, still a work in progress!")
