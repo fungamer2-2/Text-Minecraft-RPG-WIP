@@ -1,21 +1,32 @@
 [
 	{
 		"name": "Sheep",
-		"HP": 20,
-		"behavior": "passive"
+		"HP": 8,
+		"behavior": "passive",
+		"death_drops": {
+			"Wool": {"quantity": 1},
+			"Raw Mutton": {"quantity": [1, 2]},
+			"EXP": {"quantity": [1, 3]}
+		}
 	},
 	{
 		"name": "Pig",
-		"HP": 20,
+		"HP": 10,
 		"behavior": "passive",
 		"death_drops": {
-			"Raw Porkchop": {"quantity": [1, 3]}
+			"Raw Porkchop": {"quantity": [1, 3]},
+			"EXP": {"quantity": [1, 3]}
 		}
 	},
 	{
 		"name": "Chicken",
-		"HP": 20,
-		"behavior": "passive"
+		"HP": 4,
+		"behavior": "passive",
+		"death_drops": {
+			"Raw Chicken": {"quantity": 1},
+			"Feather": {"quantity": [0, 2]},
+			"EXP": {"quantity": [1, 3]}
+		}
 	},
 	{
 		"name": "Zombie",

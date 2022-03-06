@@ -103,7 +103,10 @@ class Mob:
 				else:
 					raise TypeError("Amount must be an int or a 2-item list")
 				if amount > 0 and x_in_y(x, y):
-					got[drop] = amount
+					if drop == "EXP":
+						player.EXP += amount
+					else:
+						got[drop] = amount
 			print("You got: ")
 			for item in got:
 				print(f"{got[item]}x {item}")
@@ -147,6 +150,7 @@ class Player:
 		self.food_exhaustion = 0
 		self.saturation = 5
 		self.inventory = {}
+		self.EXP = 0
 		self.time = Time()
 		
 	def damage(self, amount, death_reason=None):
@@ -156,11 +160,15 @@ class Player:
 		self.HP -= amount
 		self.mod_food_exhaustion(0.1)
 		if self.HP <= 0:
-			print("You died!")
-			if death_reason:
-				print(death_reason)
-			exit()
+			self.die(death_reason)
 		print(f"HP: {self.HP}/20")
+		
+	def die(self, death_reason=None):
+		print("You died!")
+		if death_reason:
+			print(death_reason)
+		print(f"\nScore: {self.EXP}")
+		exit()
 		
 	def heal(self, amount):
 		if amount <= 0:
@@ -277,7 +285,7 @@ while True:
 						print(f"You miss the {mob_name} attacking it while it was fleeing.")
 					else:
 						print(f"You attack the {mob_name}.")
-						mob.damage(random.randint(4, 6), player) #TODO: Add different types of swords, each doing different amounts of damage
+						mob.damage(random.randint(1, 3), player) #TODO: Add different types of swords, each doing different amounts of damage
 						if mob.HP <= 0:
 							break
 						if mob.behavior == MobBehaviorType.passive:
@@ -291,7 +299,7 @@ while True:
 					choice = choice_input("Attack", "Ignore" if mob.behavior == MobBehaviorType.passive else "Flee")
 					if choice == 2:
 						break
-		elif x_in_y(2, 5):
+		elif x_in_y(3, 5):
 			explore_finds = [("Grass", 8), ("Dirt", 1), ("Wood", 3)]
 			choices = [val[0] for val in explore_finds]
 			weights = [val[1] for val in explore_finds]
@@ -332,4 +340,4 @@ while True:
 				string += ",".join(s)
 				print(string)
 				print()
-		print("Crafting is not yet complete, still a work in progress!")
+		print("The crafting system is still a work in progress!")
