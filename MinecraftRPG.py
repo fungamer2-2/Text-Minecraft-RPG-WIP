@@ -326,7 +326,7 @@ while True:
 			else:
 				craftable.append((recipe, recipes[recipe]))
 		if len(craftable) == 0:
-			print("There are no items that you can craft")
+			print("There are no items that you have the components to craft")
 		else:
 			print("Items you can craft:")
 			for item in craftable:
@@ -340,4 +340,17 @@ while True:
 				string += ",".join(s)
 				print(string)
 				print()
-		print("The crafting system is still a work in progress!")
+			print("What would you like to craft?")
+			item_name = input()
+			item = next((v for v in craftable if v[0] == item_name), None)
+			if item is not None:
+				name = item[0]
+				components = item[1]["components"]
+				quantity = item[1]["quantity"]
+				for component in components:
+					c, num = component
+					player.remove_item(c, num)
+				player.add_item(name, quantity)
+				print(f"You have crafted {quantity}x {name}")
+			else:
+				print("Invalid item")
