@@ -274,6 +274,7 @@ while True:
 				player.damage(mob.attack_strength)
 			choice = choice_input("Attack", "Flee" if mob.behavior == MobBehaviorType.hostile else "Ignore")
 			if choice == 1:
+				weapon = "unarmed" #Controls the attack speed. TODO: Add support for different types of weapons
 				run = 0
 				while True:
 					if run > 0:
@@ -281,18 +282,26 @@ while True:
 						if run == 0:
 							print(f"The {mob_name} stops running.")
 					player.mod_food_exhaustion(0.1)
-					if run > 0 and one_in(4):
+					if run > 0 and one_in(3):
 						print(f"You miss the {mob_name} attacking it while it was fleeing.")
 					else:
 						print(f"You attack the {mob_name}.")
-						mob.damage(random.randint(1, 3), player) #TODO: Add different types of swords, each doing different amounts of damage
+						if weapon == "unarmed":
+							damage = 1
+						else:
+							damage = 3
+						mob.damage(damage, player) #TODO: Add different types of swords, each doing different amounts of damage
 						if mob.HP <= 0:
 							break
 						if mob.behavior == MobBehaviorType.passive:
 							if not one_in(3) and run == 0:
 								print(f"The {mob_name} starts running away.")
 								run += random.randint(3, 5)
-					if mob.behavior != MobBehaviorType.passive and not one_in(3):
+					if weapon == "unarmed":
+						attack_speed = 4
+					else:
+						attack_speed = 1
+					if mob.behavior != MobBehaviorType.passive and x_in_y(1, attack_speed) and not one_in(4): #I use x_in_y instead of one_in because x_in_y works with floats
 						print(f"The {mob_name} attacks you!")
 						player.damage(mob.attack_strength)
 					player.tick()

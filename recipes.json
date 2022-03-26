@@ -2,5 +2,10 @@
 	"Wooden Plank": {
 		"quantity": 4,
 		"components": [ ["Wood", 1] ]
+	},
+	
+	"Stick": {
+		"quantity": 4,
+		"components": [ ["Wooden Plank", 2] ]
 	}
 }
