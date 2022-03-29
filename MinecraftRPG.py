@@ -266,7 +266,7 @@ while True:
 			else:
 				choices = passive_mob_types
 			mob = Mob.new_mob(random.choice(choices))
-			mob = Mob.new_mob("Creeper")
+			#mob = Mob.new_mob("Creeper")
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 			if mob.behavior == MobBehaviorType.hostile and mob_name != "creeper" and one_in(2):
@@ -305,7 +305,7 @@ while True:
 					if mob_name == "creeper":
 						creeper_turn += 1
 						if creeper_turn > 2 and not one_in(creeper_turn - 1): #Increasing chance to explode after the first 2 turns
-							damage = max(random.randint(1, mob.attack_strength), random.randint(1, mob.attack_strength), random.randint(1, mob.attack_strength))
+							damage = max(random.randint(1, mob.attack_strength) for _ in range(4))
 							print("The creeper explodes!")
 							player.damage(damage)
 							break
