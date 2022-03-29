@@ -35,18 +35,19 @@
 		"behavior": "hostile",
 		"attack_strength": 5,
 		"death_drops": {
-			"Rotten Flesh": {"quantity": [0, 2]}
+			"Rotten Flesh": {"quantity": [0, 2]},
+			"EXP": {"quantity": 5}
 		}
 	},
 	{
-		"name": "Spider",
-		"HP": 16,
+		"name": "Creeper",
+		"HP": 20,
 		"night_mob": true,
 		"behavior": "hostile",
-		"attack_strength": 2,
+		"attack_strength": 22,
 		"death_drops": {
-			"String": {"quantity": [0, 2]},
-			"Spider Eye": {"quantity": 1, "chance": [1, 3]}
+			"Gunpowder": {"quantity": [0, 2]},
+			"EXP": {"quantity": 5}
 		}
 	}
 ]

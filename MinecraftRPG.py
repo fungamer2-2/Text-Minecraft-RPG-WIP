@@ -1,7 +1,6 @@
-import random, json
+import random, json, os
 from enum import Enum
 from termcolor import cprint
-
 #A text-based RPG game based on Minecraft
 
 def one_in(x):
@@ -29,7 +28,8 @@ class MobBehaviorType(Enum):
 	neutral = 1 #Neutral; will become hostile if attacked
 	hostile = 2 #Hostile; will always attack
 
-mobs_dict = json.load(open("mobs.json"))
+file_path = os.path.dirname(__file__) + "/"
+mobs_dict = json.load(open(file_path + "mobs.json"))
 
 class MobType:
 	
@@ -112,7 +112,7 @@ class Mob:
 				print(f"{got[item]}x {item}")
 				player.add_item(item, got[item])
 
-recipes = json.load(open("recipes.json"))
+recipes = json.load(open(file_path + "recipes.json"))
 				
 class Time:
 	
@@ -266,12 +266,13 @@ while True:
 			else:
 				choices = passive_mob_types
 			mob = Mob.new_mob(random.choice(choices))
-			#mob = Mob.new_mob("Zombie")
+			mob = Mob.new_mob("Creeper")
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
-			if mob.behavior == MobBehaviorType.hostile and one_in(2):
+			if mob.behavior == MobBehaviorType.hostile and mob_name != "creeper" and one_in(2):
 				cprint(f"The {mob_name} attacks you!", "red")
 				player.damage(mob.attack_strength)
+			creeper_turn = 0
 			choice = choice_input("Attack", "Flee" if mob.behavior == MobBehaviorType.hostile else "Ignore")
 			if choice == 1:
 				weapon = "unarmed" #Controls the attack speed. TODO: Add support for different types of weapons
@@ -301,7 +302,16 @@ while True:
 						attack_speed = 4
 					else:
 						attack_speed = 1
-					if mob.behavior != MobBehaviorType.passive and x_in_y(1, attack_speed) and not one_in(4): #I use x_in_y instead of one_in because x_in_y works with floats
+					if mob_name == "creeper":
+						creeper_turn += 1
+						if creeper_turn > 2 and not one_in(creeper_turn - 1): #Increasing chance to explode after the first 2 turns
+							damage = max(random.randint(1, mob.attack_strength), random.randint(1, mob.attack_strength), random.randint(1, mob.attack_strength))
+							print("The creeper explodes!")
+							player.damage(damage)
+							break
+						else:
+							print("The creeper flashes...")
+					elif mob.behavior != MobBehaviorType.passive and x_in_y(1, attack_speed) and not one_in(4): #I use x_in_y instead of one_in because x_in_y works with floats
 						print(f"The {mob_name} attacks you!")
 						player.damage(mob.attack_strength)
 					player.tick()
