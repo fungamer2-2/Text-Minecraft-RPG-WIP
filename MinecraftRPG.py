@@ -1,6 +1,6 @@
 import random, json, os
 from enum import Enum
-from termcolor import cprint
+from termcolor import cprint, colored
 #A text-based RPG game based on Minecraft
 
 def one_in(x):
@@ -11,7 +11,7 @@ def x_in_y(x, y):
 	"Returns True with a probability of x/y, otherwise returns False"
 	return random.uniform(0, y) < x
 
-def choice_input(*choices):
+def choice_input(*choices, return_text=False):
 	for index, choice in enumerate(choices):
 		print(f"{index + 1}. {choice}")
 	while True:
@@ -21,12 +21,12 @@ def choice_input(*choices):
 			continue
 		else:
 			if 1 <= choice <= len(choices):
-				return choice
-				
+				return choices[choice - 1] if return_text else choice
+	
 class MobBehaviorType(Enum):
 	passive = 0 #Passive; won't attack even if attacked
 	neutral = 1 #Neutral; will become hostile if attacked
-	hostile = 2 #Hostile; will always attack
+	hostile = 2 #Hostile; will attack on sight
 
 file_path = os.path.dirname(__file__) + "/"
 mobs_dict = json.load(open(file_path + "mobs.json"))
@@ -150,6 +150,8 @@ class Player:
 		self.food_exhaustion = 0
 		self.saturation = 5
 		self.inventory = {}
+		self.tools = []
+		self.curr_weapon = None
 		self.EXP = 0
 		self.time = Time()
 		
@@ -210,6 +212,9 @@ class Player:
 		else:
 			self.inventory[item] = amount
 			
+	def add_tool(self, tool):
+		self.tools.append(tool)
+			
 	def remove_item(self, item, amount):
 		if amount <= 0:
 			return
@@ -226,15 +231,26 @@ class Player:
 			
 class Tool:
 	
-	def __init__(self, durability):
+	def __init__(self, name, durability):
+		self.name = name
 		self.durability = durability
 		self.max_durability = durability
 		
 class Sword(Tool):
 		
-	def __init__(self, damage, durability):
-		super().__init__(damage)
+	def __init__(self, name, damage, durability):
+		super().__init__(name, durability)
 		self.damage = damage
+		
+def durability_message(durability, max_durability):
+	durability_msg = f"{durability}/{max_durability}"
+	if durability <= max_durability // 4:
+		color = "red"
+	elif durability <= max_durability // 2:
+		color = "yellow"
+	else:
+		color = "green"
+	return colored(durability_msg, color)
 
 print("MINCERAFT" if one_in(10000) else "MINECRAFT") #An extremely rare easter egg
 print()
@@ -249,12 +265,16 @@ night_mob_types = list(filter(lambda typ: mob_types[typ].night_mob, mob_types))
 
 while True:
 	player.tick()
+	if player.time.is_night():
+		print("It is currently nighttime")
 	print(f"HP: {player.HP}/20")
 	if player.saturation == 0:
 		cprint(f"Hunger: {player.hunger}/20", "yellow")
 	else:
 		print(f"Hunger: {player.hunger}/20")
-	choice = choice_input("Explore", "Inventory", "Craft")
+	if player.curr_weapon:
+		print(f"Current weapon: {player.curr_weapon.name} - Durability {durability_message(weapon.durability, weapon.max_durability)}")
+	choice = choice_input("Explore", "Inventory", "Craft", "Switch Weapon")
 	if choice == 1:
 		print("You explore for a while.")
 		player.mod_food_exhaustion(0.001)
@@ -275,9 +295,9 @@ while True:
 			creeper_turn = 0
 			choice = choice_input("Attack", "Flee" if mob.behavior == MobBehaviorType.hostile else "Ignore")
 			if choice == 1:
-				weapon = "unarmed" #Controls the attack speed. TODO: Add support for different types of weapons
 				run = 0
 				while True:
+					is_unarmed = player.curr_weapon is None
 					if run > 0:
 						run -= 1
 						if run == 0:
@@ -286,11 +306,20 @@ while True:
 					if run > 0 and one_in(3):
 						print(f"You miss the {mob_name} attacking it while it was fleeing.")
 					else:
-						print(f"You attack the {mob_name}.")
-						if weapon == "unarmed":
+						print(f"You attack the {mob_name}.") #TODO: Vary this message based on wielded weapon
+						if is_unarmed:
 							damage = 1
 						else:
-							damage = 3
+							damage = player.curr_weapon.damage
+						weapon = player.curr_weapon
+						if weapon:
+							weapon.durability -= 1
+							if weapon.durability < 0:
+								cprint(f"Your {weapon.name} is destroyed!", "red")
+								player.tools.remove(weapon)
+								player.curr_weapon = None
+							else:
+								print(f"Weapon durability: {durability_message(weapon.durability, weapon.max_durability)}")
 						mob.damage(damage, player) #TODO: Add different types of swords, each doing different amounts of damage
 						if mob.HP <= 0:
 							break
@@ -298,10 +327,10 @@ while True:
 							if not one_in(3) and run == 0:
 								print(f"The {mob_name} starts running away.")
 								run += random.randint(3, 5)
-					if weapon == "unarmed":
-						attack_speed = 4
+					if is_unarmed:
+						attack_speed = 4 #Attack speed controls the chance of being attacked by a mob when we attack
 					else:
-						attack_speed = 1
+						attack_speed = 1.6
 					if mob_name == "creeper":
 						creeper_turn += 1
 						if creeper_turn > 2 and not one_in(creeper_turn - 1): #Increasing chance to explode after the first 2 turns
@@ -319,7 +348,7 @@ while True:
 					if choice == 2:
 						break
 		elif x_in_y(3, 5):
-			explore_finds = [("Grass", 8), ("Dirt", 1), ("Wood", 3)]
+			explore_finds = [("Grass", 8), ("Dirt", 1), ("Wood", 4)]
 			choices = [val[0] for val in explore_finds]
 			weights = [val[1] for val in explore_finds]
 			found = random.choices(choices, weights=weights)[0]
@@ -332,6 +361,9 @@ while True:
 			print("Your inventory:")
 			for item in player.inventory:
 				print(f"{player.inventory[item]}x {item}")
+			print("Your tools:")
+			for index, tool in enumerate(player.tools):
+				print(f"{index+1}. {tool.name} - Durability {tool.durability}/{tool.max_durability}")
 	elif choice == 3:
 		craftable = []
 		for recipe in recipes:
@@ -353,10 +385,7 @@ while True:
 				quantity = info.get("quantity", 1)
 				string = f"{quantity}x {name} | Components: "
 				components = info["components"]
-				s = []
-				for c in components:
-					s.append(f"{c[1]}x {c[0]}")
-				string += ",".join(s)
+				string += ", ".join(f"{c[1]}x {c[0]}" for c in components)
 				print(string)
 				print()
 			print("What would you like to craft?")
@@ -367,9 +396,28 @@ while True:
 				components = item[1]["components"]
 				quantity = item[1]["quantity"]
 				for component in components:
-					c, num = component
-					player.remove_item(c, num)
-				player.add_item(name, quantity)
+					player.remove_item(*component)
+				if "Sword" in name:
+					player.add_tool(Sword(name, 4, 60))
+				else:
+					player.add_item(name, quantity)
 				print(f"You have crafted {quantity}x {name}")
 			else:
 				print("Invalid item")
+	elif choice == 4:
+		if len(player.tools) > 0:
+			options = [] 
+			for tool in player.tools:
+				options.append(f"{tool.name} - Durability {durability_message(tool.durability, tool.max_durability)}")
+			options.append("Unarmed")
+			print("Which weapon would you like to switch to?")
+			choice = choice_input(*options)
+			if choice == len(player.tools) + 1:
+				print("You decide to go unarmed")
+				player.curr_weapon = None
+			else:
+				weapon = player.tools[choice - 1]
+				print(f"You switch to your {weapon.name}")
+				player.curr_weapon = weapon
+		else:
+			print("You don't have any weapons")

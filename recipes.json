@@ -7,5 +7,10 @@
 	"Stick": {
 		"quantity": 4,
 		"components": [ ["Wooden Plank", 2] ]
+	},
+	
+	"Wooden Sword": {
+		"quantity": 1,
+		"components": [ ["Wooden Plank", 2], ["Stick", 1] ]
 	}
 }
