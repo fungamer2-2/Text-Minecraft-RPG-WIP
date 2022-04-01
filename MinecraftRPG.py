@@ -279,7 +279,7 @@ while True:
 		print("You explore for a while.")
 		player.mod_food_exhaustion(0.001)
 		player.time.advance(random.randint(10, 50))
-		mob_chance = 4 if player.time.is_night() else 8
+		mob_chance = 3 if player.time.is_night() else 8
 		if one_in(mob_chance):
 			if player.time.is_night():
 				choices = night_mob_types
