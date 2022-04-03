@@ -287,9 +287,12 @@ while True:
 				choices = passive_mob_types
 			mob = Mob.new_mob(random.choice(choices))
 			#mob = Mob.new_mob("Creeper")
+			if mob.name == "Creeper" and one_in(10): #10% of creepers in this game become Charged Creepers
+				mob.name = "Charged Creeper"
+				mob.attack_strength *= 2
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
-			if mob.behavior == MobBehaviorType.hostile and mob_name != "creeper" and one_in(2):
+			if mob.behavior == MobBehaviorType.hostile and not mob_name.endswith("creeper") and one_in(2):
 				cprint(f"The {mob_name} attacks you!", "red")
 				player.damage(mob.attack_strength)
 			creeper_turn = 0
@@ -331,12 +334,12 @@ while True:
 						attack_speed = 4 #Attack speed controls the chance of being attacked by a mob when we attack
 					else:
 						attack_speed = 1.6
-					if mob_name == "creeper":
+					if mob_name.endswith("creeper"):
 						creeper_turn += 1
 						if creeper_turn > 2 and not one_in(creeper_turn - 1): #Increasing chance to explode after the first 2 turns
-							damage = max(random.randint(1, mob.attack_strength) for _ in range(4)) #attack_strength defines explosion power for creepers
+							damage = max(random.randint(1, mob.attack_strength) for _ in range(3)) #attack_strength defines explosion power for creepers
 							print("The creeper explodes!")
-							player.damage(damage)
+							player.damage(damage, "Killed by a creeper's explosion")		
 							break
 						else:
 							print("The creeper flashes...")
