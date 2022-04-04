@@ -113,7 +113,8 @@ class Mob:
 				player.add_item(item, got[item])
 
 recipes = json.load(open(file_path + "recipes.json"))
-				
+foods = json.load(open(file_path + "foods.json"))
+			
 class Time:
 	
 	def __init__(self):
@@ -186,7 +187,7 @@ class Player:
 	 
 	def tick(self):
 		if self.HP < 20:
-			if (self.hunger == 20 or (self.hunger >= 17 and one_in(8))) and self.heal(1):
+			if (self.hunger == 20 or (self.hunger >= 18 and one_in(8))) and self.heal(1):
 				self.mod_food_exhaustion(6)
 		self.time.advance(0.5)
 	
@@ -228,6 +229,12 @@ class Player:
 		if item not in self.inventory:
 			return False
 		return self.inventory[item] >= amount
+		
+	def restore_hunger(self, hunger, saturation):
+		if self.hunger < 20:
+			self.hunger = min(self.hunger + hunger, 20)
+			self.saturation = min(self.saturation + saturation, self.hunger)
+			self.print_hunger()
 			
 class Tool:
 	
@@ -274,7 +281,7 @@ while True:
 		print(f"Hunger: {player.hunger}/20")
 	if player.curr_weapon:
 		print(f"Current weapon: {player.curr_weapon.name} - Durability {durability_message(weapon.durability, weapon.max_durability)}")
-	choice = choice_input("Explore", "Inventory", "Craft", "Switch Weapon")
+	choice = choice_input("Explore", "Inventory", "Craft", "Switch Weapon", "Eat")
 	if choice == 1:
 		print("You explore for a while.")
 		player.mod_food_exhaustion(0.001)
@@ -287,9 +294,12 @@ while True:
 				choices = passive_mob_types
 			mob = Mob.new_mob(random.choice(choices))
 			#mob = Mob.new_mob("Creeper")
-			if mob.name == "Creeper" and one_in(10): #10% of creepers in this game become Charged Creepers
+			if mob.name == "Creeper" and one_in(10): #Creepers in this game have a 10% chance to become a Charged Creeper
 				mob.name = "Charged Creeper"
 				mob.attack_strength *= 2
+			if mob.name == "Zombie" and one_in(20): #Zombies have a 5% chance to spawn as baby zombies
+				mob.name = "Baby Zombie"
+				mob.death_drops["EXP"] = 12
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 			if mob.behavior == MobBehaviorType.hostile and not mob_name.endswith("creeper") and one_in(2):
@@ -424,3 +434,19 @@ while True:
 				player.curr_weapon = weapon
 		else:
 			print("You don't have any weapons")
+	elif choice == 5:
+		foods_in_inv = list(filter(lambda item: item in foods, player.inventory))
+		if foods_in_inv:
+			choices = foods_in_inv + ["Cancel"]
+			print("Which food would you like to eat?")
+			num = choice_input(*choices)
+			print(num, len(foods_in_inv))
+			if num <= len(foods_in_inv):
+				 food = foods_in_inv[num - 1]
+				 player.remove_item(food, 1)
+				 print(f"You eat the {food}.")
+				 saturation = foods[food]["saturation"]
+				 hunger = foods[food]["hunger"]
+				 player.restore_hunger(hunger, saturation)
+		else:
+			print("You don't have anything to eat")
