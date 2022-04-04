@@ -440,7 +440,6 @@ while True:
 			choices = foods_in_inv + ["Cancel"]
 			print("Which food would you like to eat?")
 			num = choice_input(*choices)
-			print(num, len(foods_in_inv))
 			if num <= len(foods_in_inv):
 				 food = foods_in_inv[num - 1]
 				 player.remove_item(food, 1)
