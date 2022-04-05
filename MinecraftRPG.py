@@ -13,6 +13,7 @@ except ModuleNotFoundError:
 	if install[0].lower() == "n":
 		print("Continuing without colored text")
 	else:
+		import subprocess
 		returncode = subprocess.call(["pip", "install", "termcolor"])
 		if returncode:
 			print("Failed to install termcolor module; continuing without colored text")
