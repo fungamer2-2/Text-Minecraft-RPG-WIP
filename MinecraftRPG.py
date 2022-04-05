@@ -1,6 +1,24 @@
 import random, json, os
 from enum import Enum
-from termcolor import cprint, colored
+try:
+	from termcolor import cprint, colored
+except ModuleNotFoundError:
+	def cprint(text, color=None, on_color=None, attrs=None, **kwargs):
+		print(text, **kwargs)			
+	def colored(text, color=None, on_color=None, attrs=None):
+		return text
+	install = None
+	while not install or install[0].lower() not in "yn":
+		install = input("You appear to be missing the termcolor module, would you like to install it? (Y/N)")
+	if install[0].lower() == "n":
+		print("Continuing without colored text")
+	else:
+		returncode = subprocess.call(["pip", "install", "termcolor"])
+		if returncode:
+			print("Failed to install termcolor module; continuing without colored text")
+		else:
+			from termcolor import cprint, colored
+			
 #A text-based RPG game based on Minecraft
 
 def one_in(x):

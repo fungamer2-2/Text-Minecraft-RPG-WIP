@@ -49,5 +49,17 @@
 			"Gunpowder": {"quantity": [0, 2]},
 			"EXP": {"quantity": 5}
 		}
+	},
+	{
+		"name": "Spider",
+		"HP": 16,
+		"night_mob": true,
+		"behavior": "hostile",
+		"attack_strength": 2,
+		"death_drops": {
+			"String": {"quantity": [0, 2]},
+			"EXP": {"quantity": 5},
+			"Spider Eye": {"chance": [1, 3]}
+		}
 	}
 ]
