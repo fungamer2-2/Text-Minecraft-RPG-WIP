@@ -1,5 +1,7 @@
 import random, json, os
+from itertools import accumulate
 from enum import Enum
+
 try:
 	from termcolor import cprint, colored
 except ModuleNotFoundError:
@@ -47,13 +49,39 @@ class MobBehaviorType(Enum):
 	neutral = 1 #Neutral; will become hostile if attacked
 	hostile = 2 #Hostile; will attack on sight
 
+class WeightedList:
+	
+	def __init__(self):
+		self.choices = []
+		self.weights = []
+		self.cumulative_weights = None
+		
+	def add(self, value, weight):
+		if weight > 0:
+			self.choices.append(value)
+			self.weights.append(weight)
+			self.cumulative_weights = None 
+	
+	def clear(self):
+		self.choices.clear()
+		self.weights.clear()
+		self.cumulative_weights = None 
+		
+	def pick(self):
+		if len(self.choices) == 0:
+			raise IndexError("cannot pick from an empty weighted list")
+		if not self.cumulative_weights:
+			self.cumulative_weights = list(accumulate(self.weights))
+		return random.choices(self.choices, cum_weights=self.cumulative_weights)[0]
+
 file_path = os.path.dirname(__file__) + "/"
 mobs_dict = json.load(open(file_path + "mobs.json"))
 
 class MobType:
 	
-	def __init__(self, name, max_hp, behavior: MobBehaviorType, death_drops, night_mob, attack_strength):
+	def __init__(self, name, weight, max_hp, behavior: MobBehaviorType, death_drops, night_mob, attack_strength):
 		self.name = name
+		self.weight = weight
 		self.hp = max_hp
 		self.behavior = behavior
 		self.death_drops = death_drops
@@ -65,6 +93,7 @@ class MobType:
 		name = d["name"]
 		HP = d["HP"]
 		b = d["behavior"]
+		weight = d["weight"]
 		if b == "passive":
 			behavior = MobBehaviorType.passive
 		elif b == "neutral":
@@ -78,13 +107,25 @@ class MobType:
 			raise ValueError("Non-passive mobs require an attack strength")
 		death_drops = d.get("death_drops", {})
 		night_mob = d.get("night_mob", False)
-		return MobType(name, HP, behavior, death_drops, night_mob, attack_strength)
+		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength)
 
 mob_types = {}
 
 for mob_dict in mobs_dict:
-	mob_types[mob_dict["name"]] = MobType.from_dict(mob_dict)
-	
+	name = mob_dict["name"]
+	mob_types[name] = MobType.from_dict(mob_dict)	
+
+#passive_mob_types = list(filter(lambda typ: mob_types[typ].behavior == MobBehaviorType.passive, mob_types))
+#night_mob_types = list(filter(lambda typ: mob_types[typ].night_mob, mob_types))
+day_mob_types = WeightedList()
+night_mob_types = WeightedList()
+for typ in mob_types:
+	mob_type = mob_types[typ]
+	if mob_type.night_mob:
+		night_mob_types.add(typ, mob_type.weight)
+	else:
+		day_mob_types.add(typ, mob_type.weight)
+
 class Mob:
 	
 	def __init__(self, name, HP, behavior: MobBehaviorType, death_drops, attack_strength):
@@ -286,9 +327,6 @@ if choice == 2:
 	
 player = Player()
 
-passive_mob_types = list(filter(lambda typ: mob_types[typ].behavior == MobBehaviorType.passive, mob_types))
-night_mob_types = list(filter(lambda typ: mob_types[typ].night_mob, mob_types))
-
 while True:
 	player.tick()
 	if player.time.is_night():
@@ -310,8 +348,8 @@ while True:
 			if player.time.is_night():
 				choices = night_mob_types
 			else:
-				choices = passive_mob_types
-			mob = Mob.new_mob(random.choice(choices))
+				choices = day_mob_types
+			mob = Mob.new_mob(choices.pick())
 			#mob = Mob.new_mob("Creeper")
 			if mob.name == "Creeper" and one_in(10): #Creepers in this game have a 10% chance to become a Charged Creeper
 				mob.name = "Charged Creeper"
@@ -335,7 +373,7 @@ while True:
 						if run == 0:
 							print(f"The {mob_name} stops running.")
 					player.mod_food_exhaustion(0.1)
-					if run > 0 and one_in(3):
+					if run > 0 and x_in_y(3, 10):
 						print(f"You miss the {mob_name} attacking it while it was fleeing.")
 					else:
 						print(f"You attack the {mob_name}.") #TODO: Vary this message based on wielded weapon
