@@ -375,12 +375,17 @@ while True:
 					player.mod_food_exhaustion(0.1)
 					if run > 0 and x_in_y(3, 10):
 						print(f"You miss the {mob_name} attacking it while it was fleeing.")
-					else:
-						print(f"You attack the {mob_name}.") #TODO: Vary this message based on wielded weapon
+					else:			
 						if is_unarmed:
 							damage = 1
 						else:
 							damage = player.curr_weapon.damage
+						is_critical = one_in(20)
+						base_damage = damage
+						if is_critical:
+							damage = int(damage * 1.5)
+							is_critical = is_critical and damage > base_damage
+						print(f"You attack the {mob_name}.{' Critical!' if is_critical else ''}") #TODO: Vary this message based on wielded weapon
 						weapon = player.curr_weapon
 						if weapon:
 							weapon.durability -= 1
