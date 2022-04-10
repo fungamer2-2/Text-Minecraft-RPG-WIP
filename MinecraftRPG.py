@@ -350,13 +350,6 @@ while True:
 			else:
 				choices = day_mob_types
 			mob = Mob.new_mob(choices.pick())
-			#mob = Mob.new_mob("Creeper")
-			if mob.name == "Creeper" and one_in(10): #Creepers in this game have a 10% chance to become a Charged Creeper
-				mob.name = "Charged Creeper"
-				mob.attack_strength *= 2
-			if mob.name == "Zombie" and one_in(20): #Zombies have a 5% chance to spawn as baby zombies
-				mob.name = "Baby Zombie"
-				mob.death_drops["EXP"] = 12
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 			if mob.behavior == MobBehaviorType.hostile and not mob_name.endswith("creeper") and one_in(2):
