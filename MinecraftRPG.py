@@ -404,7 +404,13 @@ while True:
 						if creeper_turn > 2 and not one_in(creeper_turn - 1): #Increasing chance to explode after the first 2 turns
 							damage = max(random.randint(1, mob.attack_strength) for _ in range(3)) #attack_strength defines explosion power for creepers
 							print("The creeper explodes!")
-							player.damage(damage, "Killed by a creeper's explosion")		
+							player.damage(damage, "Killed by a creeper's explosion")
+							explosion_power = int(mob.attack_strength ** 1.3 / 2)
+							dirt = random.randint(explosion_power // 3, explosion_power) + 1
+							grass = random.randint(explosion_power // 9, explosion_power // 3) + 1
+							player.add_item("Dirt", dirt)
+							player.add_item("Grass", grass)
+							print(f"You got {grass}x Grass and {dirt}x Dirt from the explosion")
 							break
 						else:
 							print("The creeper flashes...")
