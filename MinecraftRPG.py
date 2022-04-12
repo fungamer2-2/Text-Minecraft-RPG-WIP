@@ -350,6 +350,7 @@ while True:
 			else:
 				choices = day_mob_types
 			mob = Mob.new_mob(choices.pick())
+			#mob = Mob.new_mob("Creeper")
 			mob_name = mob.name.lower()
 			print(f"You found a {mob_name} while exploring{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 			if mob.behavior == MobBehaviorType.hostile and not mob_name.endswith("creeper") and one_in(2):
@@ -405,9 +406,9 @@ while True:
 							damage = max(random.randint(1, mob.attack_strength) for _ in range(3)) #attack_strength defines explosion power for creepers
 							print("The creeper explodes!")
 							player.damage(damage, "Killed by a creeper's explosion")
-							explosion_power = int(mob.attack_strength ** 1.3 / 2)
+							explosion_power = mob.attack_strength // 7
 							dirt = random.randint(explosion_power // 3, explosion_power) + 1
-							grass = random.randint(explosion_power // 9, explosion_power // 3) + 1
+							dirt = int((explosion_power * random.uniform(0.75, 1.25)) ** 2) + 1
 							player.add_item("Dirt", dirt)
 							player.add_item("Grass", grass)
 							print(f"You got {grass}x Grass and {dirt}x Dirt from the explosion")
