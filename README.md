@@ -2,4 +2,4 @@
 A text-based command-line RPG based on Minecraft<br />
 Currently a work in progress
 
-Note: Requires termcolor module; if you don't have the module, run `pip install termcolor` to install it.
+The `termcolor` module is used to display text in color. It will prompt you to install it if you don't have it already.
