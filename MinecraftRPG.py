@@ -332,10 +332,7 @@ while True:
 	if player.time.is_night():
 		print("It is currently nighttime")
 	print(f"HP: {player.HP}/20")
-	if player.saturation == 0:
-		cprint(f"Hunger: {player.hunger}/20", "yellow")
-	else:
-		print(f"Hunger: {player.hunger}/20")
+	player.print_hunger()
 	if player.curr_weapon:
 		print(f"Current weapon: {player.curr_weapon.name} - Durability {durability_message(weapon.durability, weapon.max_durability)}")
 	choice = choice_input("Explore", "Inventory", "Craft", "Switch Weapon", "Eat")
