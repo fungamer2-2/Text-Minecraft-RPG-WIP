@@ -64,7 +64,7 @@
 		"attack_strength": 5,
 		"death_drops": {
 			"Rotten Flesh": {"quantity": [0, 2]},
-			"EXP": {"quantity": 5}
+			"EXP": {"quantity": 12}
 		}
 	},
 	{
