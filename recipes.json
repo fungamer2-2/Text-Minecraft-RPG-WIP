@@ -11,6 +11,28 @@
 	
 	"Wooden Sword": {
 		"quantity": 1,
-		"components": [ ["Wooden Plank", 2], ["Stick", 1] ]
+		"components": [ ["Wooden Plank", 2], ["Stick", 1] ],
+		"tool_data": {
+			"damage": 4,
+			"durability": 60
+		}
+	},
+	
+	"Wooden Pickaxe": {
+		"quantity": 1,
+		"components": [ ["Wooden Plank", 3], ["Stick", 2] ],
+		"tool_data": {
+			"damage": 2,
+			"durability": 59
+		}
+	},
+	
+	"Stone Pickaxe": {
+		"quantity": 1,
+		"components": [ ["Stone", 3], ["Stick", 2] ],
+		"tool_data": {
+			"damage": 3,
+			"durability": 132
+		}
 	}
 }
