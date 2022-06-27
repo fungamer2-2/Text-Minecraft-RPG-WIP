@@ -1,4 +1,4 @@
-import random, json, os
+import random, json, os, math, time
 from itertools import accumulate
 from enum import Enum
 
@@ -163,7 +163,7 @@ class Mob:
 			got = {}
 			for drop in self.death_drops:
 				r = self.death_drops[drop]
-				q = r["quantity"]
+				q = r.get("quantity", 1)
 				x, y = r.get("chance", [1, 1])
 				if isinstance(q, list):
 					amount = random.randint(*q)
@@ -176,10 +176,11 @@ class Mob:
 						player.EXP += amount
 					else:
 						got[drop] = amount
-			print("You got: ")
-			for item in got:
-				print(f"{got[item]}x {item}")
-				player.add_item(item, got[item])
+			if got:
+				print("You got: ")
+				for item in got:
+					print(f"{got[item]}x {item}")
+					player.add_item(item, got[item])
 
 recipes = json.load(open(file_path + "recipes.json"))
 foods = json.load(open(file_path + "foods.json"))
@@ -225,12 +226,13 @@ class Player:
 		self.EXP = 0
 		self.time = Time()
 		
-	def damage(self, amount, death_reason=None):
+	def damage(self, amount, physical=True, death_reason=None):
 		if amount <= 0:
 			return
 		cprint(f"You take {amount} damage!", "red")
 		self.HP -= amount
-		self.mod_food_exhaustion(0.1)
+		if physical:
+			self.mod_food_exhaustion(0.1)
 		if self.HP <= 0:
 			self.die(death_reason)
 		print(f"HP: {self.HP}/20")
@@ -242,6 +244,9 @@ class Player:
 		print(f"\nScore: {self.EXP}")
 		exit()
 		
+	def print_health(self):
+		print(f"HP: {self.HP}/20")
+		
 	def heal(self, amount):
 		if amount <= 0:
 			return False
@@ -250,7 +255,7 @@ class Player:
 		healed_by = self.HP - old_hp
 		if healed_by > 0:
 			cprint(f"You are healed by {healed_by} HP.", "green")
-			print(f"HP: {self.HP}/20")
+			self.print_health()
 			return True
 		return False
 	 
@@ -294,10 +299,22 @@ class Player:
 		if self.inventory[item] <= 0:
 			del self.inventory[item]
 			
+	def armed(self):
+		return self.curr_weapon is not None
+		
+	def attack_damage(self):
+		return self.curr_weapon.damge if self.armed() else 1
+		
+	def attack_speed(self):
+		return self.curr_weapon.attack_speed if self.armed() else 4
+		
 	def has_item(self, item, amount=1):
 		if item not in self.inventory:
 			return False
 		return self.inventory[item] >= amount
+		
+	def has_any_item(self, names):
+		return any(name in self.inventory for name in names)
 		
 	def has_tool(self, tool_name):
 		return any(tool.name == tool_name for tool in self.tools)
@@ -308,28 +325,42 @@ class Player:
 			self.saturation = min(self.saturation + saturation, self.hunger)
 			self.print_hunger()
 			
+	def decrement_tool_durability(self):
+		tool = player.curr_weapon
+		if tool:
+			tool.durability -= 1
+			if tool.durability < 0:
+				cprint(f"Your {tool.name} is destroyed!", "red")
+				player.tools.remove(tool)
+				player.curr_weapon = None
+			else:
+				print(f"Durability: {durability_message(tool.durability, tool.max_durability)}")
+			
 	def switch_weapon_menu(self):
-		options = [] 
-		for tool in self.tools:
-			options.append(f"{tool.name} - Durability {durability_message(tool.durability, tool.max_durability)}")
-		options.append("Unarmed")
-		print("Which weapon would you like to switch to?")
-		choice = choice_input(*options)
-		if choice == len(self.tools) + 1:
-			print("You decide to go unarmed")
-			self.curr_weapon = None
-		else:
-			weapon = self.tools[choice - 1]
-			print(f"You switch to your {weapon.name}")
-			self.curr_weapon = weapon
+		if len(self.tools) > 0:
+			options = [] 
+			for tool in self.tools:
+				options.append(f"{tool.name} - Durability {durability_message(tool.durability, tool.max_durability)}")
+			options.append("Unarmed")
+			print("Which weapon would you like to switch to?")
+			choice = choice_input(*options)
+			if choice == len(self.tools) + 1:
+				print("You decide to go unarmed")
+				self.curr_weapon = None
+			else:
+				weapon = self.tools[choice - 1]
+				print(f"You switch to your {weapon.name}")
+				self.curr_weapon = weapon
 			
 class Tool:
 	
-	def __init__(self, name, damage, durability, mining_mult):
+	def __init__(self, name, damage, durability, mining_mult, attack_speed):
 		self.name = name
 		self.damage = damage
 		self.durability = durability
 		self.max_durability = durability
+		self.mining_mult = mining_mult
+		self.attack_speed = attack_speed
 				
 def durability_message(durability, max_durability):
 	durability_msg = f"{durability}/{max_durability}"
@@ -360,7 +391,6 @@ def random_battle(player, night_mob, action_verb="exploring"):
 			player.switch_weapon_menu()
 		run = 0
 		while True:
-			is_unarmed = player.curr_weapon is None
 			if run > 0:
 				run -= 1
 				if run == 0:
@@ -369,36 +399,22 @@ def random_battle(player, night_mob, action_verb="exploring"):
 			if run > 0 and x_in_y(3, 10):
 				print(f"You miss the {mob_name} attacking it while it was fleeing.")
 			else:			
-				if is_unarmed:
-					damage = 1
-				else:
-					damage = player.curr_weapon.damage
+				damage = player.attack_damage()
 				is_critical = one_in(20)
 				base_damage = damage
 				if is_critical:
 					damage = int(damage * 1.5)
 					is_critical = is_critical and damage > base_damage
 				print(f"You attack the {mob_name}.{' Critical!' if is_critical else ''}") #TODO: Vary this message based on wielded weapon
-				weapon = player.curr_weapon
-				if weapon:
-					weapon.durability -= 1
-					if weapon.durability < 0:
-						cprint(f"Your {weapon.name} is destroyed!", "red")
-						player.tools.remove(weapon)
-						player.curr_weapon = None
-					else:
-						print(f"Weapon durability: {durability_message(weapon.durability, weapon.max_durability)}")
-				mob.damage(damage, player) #TODO: Add different types of swords, each doing different amounts of damage
+				player.decrement_tool_durability()
+				mob.damage(damage, player)
 				if mob.HP <= 0:
 					break
 				if mob.behavior == MobBehaviorType.passive:
 					if not one_in(3) and run == 0:
 						print(f"The {mob_name} starts running away.")
 						run += random.randint(3, 5)
-			if is_unarmed:
-				attack_speed = 4 #Attack speed controls the chance of being attacked by a mob when we attack
-			else:
-				attack_speed = 1.6
+			attack_speed = player.attack_speed() #Attack speed controls the chance of being attacked by a mob when we attack
 			if mob_name.endswith("creeper"):
 				creeper_turn += 1
 				if creeper_turn > 2 and not one_in(creeper_turn - 1): #Increasing chance to explode after the first 2 turns
@@ -407,7 +423,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 					player.damage(damage, "Killed by a creeper's explosion")
 					explosion_power = mob.attack_strength // 7
 					if action_verb == "mining":
-						minables.add("Stone", 4000)
+						minables.add("Stone", 3000)
 						minables.add("Coal Ore", 124)
 						minables.add("Iron Ore", 72)
 						minables.add("Lapis Lazuli Ore", 3)
@@ -417,15 +433,17 @@ def random_battle(player, night_mob, action_verb="exploring"):
 						num = int((explosion_power * random.uniform(0.75, 1.25)) ** 2.5) + 1
 						found = {}
 						for _ in range(num):
-							s = minables.pick()
-							if s in found:
-								found[s] += 1
-							else:
-								found[s] = 1
-						print("You got the following items from the explosion:")
-						for item in found:
-							print(f"{found[item]}x {item}")
-							player.add_item(item, found[item])
+							if not one_in(3):
+								s = minables.pick()
+								if s in found:
+									found[s] += 1
+								else:
+									found[s] = 1
+						if len(found) > 0:
+							print("You got the following items from the explosion:")
+							for item in found:
+								print(f"{found[item]}x {item}")
+								player.add_item(item, found[item])
 					else:
 						grass = random.randint(explosion_power // 3, explosion_power) + 1
 						dirt = int((explosion_power * random.uniform(0.75, 1.25)) ** 2) + 1
@@ -455,12 +473,12 @@ while True:
 	player.tick()
 	if player.time.is_night():
 		print("It is currently nighttime")
-	print(f"HP: {player.HP}/20")
+	player.print_health()
 	player.print_hunger()
 	if player.curr_weapon:
 		weapon = player.curr_weapon
 		print(f"Current weapon: {player.curr_weapon.name} - Durability {durability_message(weapon.durability, weapon.max_durability)}")
-	choice = choice_input("Explore", "Inventory", "Craft", "Switch Weapon", "Eat", "Mine")
+	choice = choice_input("Explore", "Inventory", "Craft", "Switch Weapon", "Eat", "Mine", "Smelt")
 	if choice == 1:
 		print("You explore for a while.")
 		player.mod_food_exhaustion(0.001)
@@ -516,14 +534,15 @@ while True:
 				name = item[0]
 				components = item[1]["components"]
 				quantity = item[1]["quantity"]
-				tool_data = item[1].get("tool_data", {})
-				damage = tool_data.get("damage", 1)
-				durability = tool_data.get("durability", 60)
-				mining_mult = tool_data.get("mining_mult", 1)
 				for component in components:
 					player.remove_item(*component)
-				if tool_data:
-					player.add_tool(Tool(name, damage, durability, mining_mult))
+				if "tool_data" in item[1]:
+					tool_data = item[1]["tool_data"]
+					damage = tool_data.get("damage", 1)
+					durability = tool_data.get("durability", 60)
+					mining_mult = tool_data.get("mining_mult", 1)
+					attack_speed = tool_data.get("attack_speed", 4)
+					player.add_tool(Tool(name, damage, durability, mining_mult, attack_speed))
 				else:
 					player.add_item(name, quantity)
 				print(f"You have crafted {quantity}x {name}")
@@ -556,31 +575,63 @@ while True:
 				tier_num = tiers.index(player.curr_weapon.name) + 1
 				minables = WeightedList()
 				minables.add("Stone", 2000)
-				minables.add("Coal Ore", 124)
+				minables.add("Coal", 124)
 				if tier_num > 1:
-					minables.add("Iron Ore", 72)
-					minables.add("Lapis Lazuli Ore", 3)
+					minables.add("Raw Iron", 72)
+					minables.add("Lapis Lazuli", 3)
 					if tier_num > 2:
-						minables.add("Gold Ore", 7)
-						minables.add("Diamond Ore", 3)
-						minables.add("Redstone Ore", 25)
+						minables.add("Raw Gold", 7)
+						minables.add("Diamond", 3)
 				found = minables.pick()
-				print(f"You found 1x {found}")
-				player.add_item(found)
-				player.mod_food_exhaustion(0.005)
-				player.time.advance(random.randint(1, 3))
-				tool = player.curr_weapon
-				tool.durability -= 1
-				if tool.durability < 0:
-					cprint(f"Your {tool.name} is destroyed!", "red")
-					player.tools.remove(tool)
-					player.curr_weapon = None
+				if found == "Lapis Lazuli":
+					quantity = random.randint(4, 9)
 				else:
-					print(f"Durability: {durability_message(tool.durability, tool.max_durability)}")
-				mob_chance = 12 if player.time.is_night() else 20
+					quantity = 1
+				print(f"You found {quantity}x {found}")
+				player.add_item(found, quantity)
+				player.mod_food_exhaustion(0.005)
+				if found == "Stone":
+					mine_time = 1.5
+				else:
+					mine_time = 3
+				mine_mult = player.curr_weapon.mining_mult
+				mine_time = round(mine_time / mining_mult, 2)
+				player.time.advance(random.randint(1, 3))
+				player.decrement_tool_durability()
+				mob_chance = 10 if player.time.is_night() else 15
+				mob_chance *= math.sqrt(mine_mult)
+				mob_chance = round(mob_chance)
 				if one_in(mob_chance):
 					random_battle(player, True, "mining")
 			else:
 				print("You need to switch to your pickaxe to mine")
 		else:
 			print("You can't mine without a pickaxe")
+	elif choice == 7:
+		if player.has_item("Furnace"):
+			smeltable = {
+				"Raw Iron": "Iron Ingot"
+			}
+			if player.has_item("Coal"):
+				can_smelt = list(filter(lambda item: item in smeltable, player.inventory))
+				if can_smelt:
+					print("Smelt which item?")
+					strings = list(map(lambda s: f"{s} -> {smeltable[s]}", can_smelt))
+					choice = choice_input(*strings)
+					smelted = can_smelt[choice - 1]
+					smelt_into = smeltable[smelted]
+					print("Smelting...")
+					for _ in range(8):
+						time.sleep(1)
+						player.tick()
+					player.time.advance(72)
+					player.remove_item("Coal", 1)
+					player.remove_item(smelted, 1)
+					player.add_item(smelt_into)
+					print(f"You got 1x {smelt_into}")
+				else:
+					print("You don't have anything to smelt")
+			else:
+				print("You need 1x Coal to smelt items")
+		else:
+			print("You need a furnace to smelt items")	

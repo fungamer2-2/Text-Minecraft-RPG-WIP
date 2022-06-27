@@ -14,7 +14,18 @@
 		"components": [ ["Wooden Plank", 2], ["Stick", 1] ],
 		"tool_data": {
 			"damage": 4,
-			"durability": 60
+			"durability": 59,
+			"attack_speed": 1.6
+		}
+	},
+	
+	"Stone Sword": {
+		"quantity": 1,
+		"components": [ ["Stone", 2], ["Stick", 1] ],
+		"tool_data": {
+			"damage": 5,
+			"durability": 131,
+			"attack_speed": 1.6
 		}
 	},
 	
@@ -23,7 +34,8 @@
 		"components": [ ["Wooden Plank", 3], ["Stick", 2] ],
 		"tool_data": {
 			"damage": 2,
-			"durability": 59
+			"durability": 59,
+			"attack_speed": 1.2
 		}
 	},
 	
@@ -32,7 +44,13 @@
 		"components": [ ["Stone", 3], ["Stick", 2] ],
 		"tool_data": {
 			"damage": 3,
-			"durability": 132
+			"durability": 132,
+			"attack_speed": 1.2
 		}
+	},
+	
+	"Furnace": {
+		"quantity": 1,
+		"components": [ ["Stone", 8] ]
 	}
 }
