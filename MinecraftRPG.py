@@ -78,8 +78,7 @@ class WeightedList:
 			self.cumulative_weights = list(accumulate(self.weights))
 		return random.choices(self.choices, cum_weights=self.cumulative_weights)[0]
 
-file_path = os.path.dirname(__file__) + "/"
-mobs_dict = json.load(open(file_path + "mobs.json"))
+mobs_dict = json.load(open("mobs.json"))
 
 class MobType:
 	
@@ -182,8 +181,8 @@ class Mob:
 					print(f"{got[item]}x {item}")
 					player.add_item(item, got[item])
 
-recipes = json.load(open(file_path + "recipes.json"))
-foods = json.load(open(file_path + "foods.json"))
+recipes = json.load(open("recipes.json"))
+foods = json.load(open("foods.json"))
 			
 class Time:
 	
@@ -303,7 +302,7 @@ class Player:
 		return self.curr_weapon is not None
 		
 	def attack_damage(self):
-		return self.curr_weapon.damge if self.armed() else 1
+		return self.curr_weapon.damage if self.armed() else 1
 		
 	def attack_speed(self):
 		return self.curr_weapon.attack_speed if self.armed() else 4
@@ -461,7 +460,10 @@ def random_battle(player, night_mob, action_verb="exploring"):
 			if choice == 2:
 				return
 
+splashes = open("splashes.txt").read().splitlines()
+
 print("MINCERAFT" if one_in(10000) else "MINECRAFT") #An extremely rare easter egg
+cprint(random.choice(splashes), "yellow", attrs=["bold"])
 print()
 choice = choice_input("Play", "Quit")
 if choice == 2:
