@@ -402,7 +402,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 				print(f"You miss the {mob_name} attacking it while it was fleeing.")
 			else:			
 				damage = player.attack_damage()
-				is_critical = one_in(20)
+				is_critical = one_in(10)
 				base_damage = damage
 				if is_critical:
 					damage = int(damage * 1.5)
