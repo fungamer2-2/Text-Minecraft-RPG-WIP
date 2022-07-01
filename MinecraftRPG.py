@@ -225,6 +225,9 @@ class Player:
 		self.EXP = 0
 		self.time = Time()
 		
+	def advance_time(self, secs):
+		self.time.advance(secs)
+		
 	def damage(self, amount, physical=True, death_reason=None):
 		if amount <= 0:
 			return
@@ -262,7 +265,7 @@ class Player:
 		if self.HP < 20:
 			if (self.hunger == 20 or (self.hunger >= 18 and one_in(8))) and self.heal(1):
 				self.mod_food_exhaustion(6)
-		self.time.advance(0.5)
+		self.advance_time(0.5)
 	
 	def mod_food_exhaustion(self, amount):
 		self.food_exhaustion += amount
@@ -484,7 +487,7 @@ while True:
 	if choice == 1:
 		print("You explore for a while.")
 		player.mod_food_exhaustion(0.001)
-		player.time.advance(random.randint(10, 30))
+		player.advance_time(random.randint(10, 30))
 		mob_chance = 3 if player.time.is_night() else 8
 		if one_in(mob_chance):
 			random_battle(player, player.time.is_night())
@@ -598,7 +601,7 @@ while True:
 					mine_time = 3
 				mine_mult = player.curr_weapon.mining_mult
 				mine_time = round(mine_time / mining_mult, 2)
-				player.time.advance(random.randint(1, 3))
+				player.advance_time(random.randint(1, 3))
 				player.decrement_tool_durability()
 				mob_chance = 10 if player.time.is_night() else 15
 				mob_chance *= math.sqrt(mine_mult)
@@ -626,7 +629,7 @@ while True:
 					for _ in range(8):
 						time.sleep(1)
 						player.tick()
-					player.time.advance(72)
+					player.advance_time(72)
 					player.remove_item("Coal", 1)
 					player.remove_item(smelted, 1)
 					player.add_item(smelt_into)
