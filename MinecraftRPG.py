@@ -1,4 +1,4 @@
-import random, json, os, math, time
+import random, json, math, time
 from itertools import accumulate
 from enum import Enum
 
@@ -634,11 +634,11 @@ while True:
 				player.add_item(found, quantity)
 				player.mod_food_exhaustion(0.005)
 				if found == "Stone":
-					mine_time = 1.5
+					base_mine_time = 1.5
 				else:
-					mine_time = 3
+					base_mine_time = 3
 				mine_mult = player.curr_weapon.mining_mult
-				mine_time = round(mine_time / mining_mult, 2)
+				mine_time = round(base_mine_time / mining_mult, 2)
 				player.advance_time(random.randint(1, 3))
 				player.decrement_tool_durability()
 				mob_chance = 10 if player.time.is_night() else 15
