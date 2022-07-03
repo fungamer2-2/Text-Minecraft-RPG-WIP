@@ -181,7 +181,44 @@ class Mob:
 					print(f"{got[item]}x {item}")
 					player.add_item(item, got[item])
 
-recipes = json.load(open("recipes.json"))
+class ToolData:
+	
+	def __init__(self, damage, durability, attack_speed, mining_mult):
+		self.damage = damage
+		self.durability = durability
+		self.attack_speed = attack_speed
+		self.mining_mult = mining_mult
+	
+	@staticmethod	
+	def from_dict(d):
+		damage = d.get("damage", 1)
+		durability = d["durability"]
+		attack_speed = d.get("attack_speed", 4)
+		mining_mult = d.get("mining_mult", 1)
+		return ToolData(damage, durability, attack_speed, mining_mult)	
+
+class Recipe:
+	
+	def __init__(self, quantity, components, tool_data=None):
+		self.quantity = quantity
+		self.components = components
+		self.tool_data = tool_data
+		
+	@staticmethod
+	def from_dict(d):
+		quantity = d.get("quantity", 1)
+		components = d["components"]
+		tool_data = d.get("tool_data")
+		if tool_data:
+			tool_data = ToolData.from_dict(tool_data)
+		return Recipe(quantity, components, tool_data)
+		
+r = json.load(open("recipes.json"))
+recipes = {}
+for name in r:
+	recipe = r[name]
+	recipes[name] = Recipe.from_dict(recipe)
+
 foods = json.load(open("foods.json"))
 			
 class Time:
@@ -326,6 +363,13 @@ class Player:
 			self.hunger = min(self.hunger + hunger, 20)
 			self.saturation = min(self.saturation + saturation, self.hunger)
 			self.print_hunger()
+			
+	def can_make_recipe(self, recipe):
+		for component in recipe.components:
+			name, amount = component
+			if not self.has_item(name, amount):
+				return False
+		return True	
 			
 	def decrement_tool_durability(self):
 		tool = player.curr_weapon
@@ -512,13 +556,7 @@ while True:
 		craftable = []
 		for recipe in recipes:
 			info = recipes[recipe]
-			components = info["components"]
-			for component in components:
-				name = component[0]
-				amount = component[1]
-				if not player.has_item(name, amount):
-					break
-			else:
+			if player.can_make_recipe(info):
 				craftable.append((recipe, recipes[recipe]))
 		if len(craftable) == 0:
 			print("There are no items that you have the components to craft")
@@ -526,9 +564,9 @@ while True:
 			print("Items you can craft:")
 			for item in craftable:
 				name, info = item
-				quantity = info.get("quantity", 1)
+				quantity = info.quantity
 				string = f"{quantity}x {name} | Components: "
-				components = info["components"]
+				components = info.components
 				string += ", ".join(f"{c[1]}x {c[0]}" for c in components)
 				print(string)
 				print()
@@ -536,17 +574,17 @@ while True:
 			item_name = input()
 			item = next((v for v in craftable if v[0] == item_name), None)
 			if item is not None:
-				name = item[0]
-				components = item[1]["components"]
-				quantity = item[1]["quantity"]
+				name, info = item
+				components = info.components
+				quantity = info.quantity
 				for component in components:
 					player.remove_item(*component)
-				if "tool_data" in item[1]:
-					tool_data = item[1]["tool_data"]
-					damage = tool_data.get("damage", 1)
-					durability = tool_data.get("durability", 60)
-					mining_mult = tool_data.get("mining_mult", 1)
-					attack_speed = tool_data.get("attack_speed", 4)
+				if info.tool_data is not None:
+					tool_data = info.tool_data
+					damage = tool_data.damage
+					durability = tool_data.durability
+					mining_mult = tool_data.mining_mult
+					attack_speed = tool_data.attack_speed
 					player.add_tool(Tool(name, damage, durability, mining_mult, attack_speed))
 				else:
 					player.add_item(name, quantity)
