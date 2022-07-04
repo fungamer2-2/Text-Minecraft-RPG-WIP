@@ -372,13 +372,13 @@ class Player:
 		return True	
 			
 	def decrement_tool_durability(self):
-		tool = player.curr_weapon
+		tool = self.curr_weapon
 		if tool:
 			tool.durability -= 1
 			if tool.durability < 0:
 				cprint(f"Your {tool.name} is destroyed!", "red")
-				player.tools.remove(tool)
-				player.curr_weapon = None
+				self.tools.remove(tool)
+				self.curr_weapon = None
 			else:
 				print(f"Durability: {durability_message(tool.durability, tool.max_durability)}")
 			
@@ -655,6 +655,13 @@ while True:
 			smeltable = {
 				"Raw Iron": "Iron Ingot"
 			}
+			fuel_sources = {
+				"Coal": 80,
+				"Wooden Pickaxe": 10,
+				"Wooden Sword": 10
+			}
+			item_sources = list(filter(lambda item: item in player.inventory, fuel_sources))
+			tool_sources = list(filter(lambda tool: any(t.name == tool for t in player.tools), fuel_sources))
 			if player.has_item("Coal"):
 				can_smelt = list(filter(lambda item: item in smeltable, player.inventory))
 				if can_smelt:
@@ -663,18 +670,29 @@ while True:
 					choice = choice_input(*strings)
 					smelted = can_smelt[choice - 1]
 					smelt_into = smeltable[smelted]
+					all_sources = item_sources + tool_sources
+					print("Which fuel source to use?")
+					choice = choice_input(*all_sources)
+					source = all_sources[choice - 1]
+					dur = fuel_sources[source]
+					is_tool = source in tool_sources
 					print("Smelting...")
-					for _ in range(8):
-						time.sleep(1)
-						player.tick()
-					player.advance_time(72)
-					player.remove_item("Coal", 1)
+					time.sleep(dur / 10)
+					player.advance_time(dur)
+					if is_tool:
+						tool = next((t for t in player.tools if t.name == source), None)
+						if tool is not None:
+							player.tools.remove(tool)
+						else:
+							cprint("Could not find the tool to remove", "yellow")
+					else:
+						player.remove_item(source, 1)
 					player.remove_item(smelted, 1)
 					player.add_item(smelt_into)
 					print(f"You got 1x {smelt_into}")
 				else:
 					print("You don't have anything to smelt")
 			else:
-				print("You need 1x Coal to smelt items")
+				print("You need a fuel source to smelt items")
 		else:
 			print("You need a furnace to smelt items")	
