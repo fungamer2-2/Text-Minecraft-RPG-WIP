@@ -51,7 +51,7 @@ def yes_no(message):
 class MobBehaviorType(Enum):
 	passive = 0 #Passive; won't attack even if attacked
 	neutral = 1 #Neutral; will become hostile if attacked
-	hostile = 2 #Hostile; will attack on sight
+	hostile = 2 #Hostile; may attack on sight
 
 class WeightedList:
 	
