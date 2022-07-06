@@ -357,6 +357,11 @@ class Player:
 		
 	def has_tool(self, tool_name):
 		return any(tool.name == tool_name for tool in self.tools)
+	
+	def has_any_tool(self, tool_names):
+		l1 = set(tool_names)
+		l2 = set(tool.name for tool in self.tools)
+		return not l1.isdisjoint(l2)
 		
 	def restore_hunger(self, hunger, saturation):
 		if self.hunger < 20:
@@ -476,7 +481,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 						minables.add("Gold Ore", 7)
 						minables.add("Diamond Ore", 3)
 						minables.add("Redstone Ore", 25)
-						num = int((explosion_power * random.uniform(0.75, 1.25)) ** 2.5) + 1
+						num = int((explosion_power * random.uniform(0.75, 1.25)) ** 2) + 1
 						found = {}
 						for _ in range(num):
 							if not one_in(3):
@@ -662,7 +667,7 @@ while True:
 			}
 			item_sources = list(filter(lambda item: item in player.inventory, fuel_sources))
 			tool_sources = list(filter(lambda tool: any(t.name == tool for t in player.tools), fuel_sources))
-			if player.has_item("Coal"):
+			if player.has_any_item(item_sources) or player.has_any_tool(tool_sources):
 				can_smelt = list(filter(lambda item: item in smeltable, player.inventory))
 				if can_smelt:
 					print("Smelt which item?")
@@ -670,8 +675,8 @@ while True:
 					choice = choice_input(*strings)
 					smelted = can_smelt[choice - 1]
 					smelt_into = smeltable[smelted]
-					all_sources = item_sources + tool_sources
 					print("Which fuel source to use?")
+					all_sources = item_sources + tool_sources
 					choice = choice_input(*all_sources)
 					source = all_sources[choice - 1]
 					dur = fuel_sources[source]
