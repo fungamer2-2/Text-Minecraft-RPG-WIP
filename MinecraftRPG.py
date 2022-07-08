@@ -721,15 +721,15 @@ while True:
 				can_smelt = list(filter(lambda item: item in smeltable, player.inventory))
 				if can_smelt:
 					print("Smelt which item?")
-					strings = list(map(lambda s: f"{s} -> {smeltable[s]}", can_smelt))
+					strings = list(map(lambda s: f"{s} -> {smeltable[s][0]}", can_smelt))
 					choice = choice_input(*strings)
 					smelted = can_smelt[choice - 1]
-					smelt_into = smeltable[smelted]
+					smelt_into, exp = smeltable[smelted]
 					print("Which fuel source to use?")
 					all_sources = item_sources + tool_sources
 					choice = choice_input(*all_sources)
 					source = all_sources[choice - 1]
-					dur, exp = fuel_sources[source]
+					dur = fuel_sources[source]
 					is_tool = source in tool_sources
 					print("Smelting...")
 					time.sleep(dur / 10)
