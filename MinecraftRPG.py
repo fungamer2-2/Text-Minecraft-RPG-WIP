@@ -540,7 +540,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 					break
 				else:
 					print("The creeper flashes...")
-			elif mob.behavior != MobBehaviorType.passive and x_in_y(1, attack_speed) and not one_in(4): #I use x_in_y instead of one_in because x_in_y works with floats
+			elif mob.behavior != MobBehaviorType.passive and x_in_y(1, attack_speed) and not one_in(8): #I use x_in_y instead of one_in because x_in_y works with floats
 				print(f"The {mob_name} attacks you!")
 				player.damage(mob.attack_strength)
 			player.tick()
