@@ -265,7 +265,7 @@ class Player:
 	def advance_time(self, secs):
 		self.time.advance(secs)
 		
-	def damage(self, amount, physical=True, death_reason=None):
+	def damage(self, amount, death_reason=None, physical=True):
 		if amount <= 0:
 			return
 		cprint(f"You take {amount} damage!", "red")
