@@ -32,6 +32,21 @@ def x_in_y(x, y):
 	"Returns True with a probability of x/y, otherwise returns False"
 	return random.uniform(0, y) < x
 
+def round_stochastic(value):
+	"""Randomly rounds a number up or down, based on its decimal part
+	For example, 5.3 has a 70% chance to be rounded to 5, 30% chance to be rounded to 6
+	And 2.8 has an 80% chance to be rounded to 3, 20% chance to be rounded to 2"""
+	low = math.floor(value)
+	high = math.ceil(value)
+	if value < 0:
+		if random.random() < high - value:
+			return low
+		return high
+	else:
+		if random.random() < value - low:
+			return high
+		return low 
+
 def choice_input(*choices, return_text=False):
 	for index, choice in enumerate(choices):
 		print(f"{index + 1}. {choice}")
@@ -172,7 +187,7 @@ class Mob:
 					raise TypeError("Amount must be an int or a 2-item list")
 				if amount > 0 and x_in_y(x, y):
 					if drop == "EXP":
-						player.EXP += amount
+						player.gain_exp(amount)
 					else:
 						got[drop] = amount
 			if got:
@@ -249,6 +264,14 @@ class Time:
 		elif last_mins < 38 and self.mins >= 38:
 			cprint("The sun begins to come up", "blue")
 
+def get_exp_required_for_level(level):
+	assert level >= 0
+	if level <= 16:
+		return level ** 2 + 6 * level
+	if level < 32:
+		return round(2.5 * level**2 - 40.5 * level + 360)
+	return round(4.5 * level**2 - 160.5 * level + 2220)
+	
 class Player:
 	
 	def __init__(self):
@@ -260,6 +283,7 @@ class Player:
 		self.tools = []
 		self.curr_weapon = None
 		self.EXP = 0
+		self.level = 0
 		self.time = Time()
 		
 	def advance_time(self, secs):
@@ -274,7 +298,20 @@ class Player:
 			self.mod_food_exhaustion(0.1)
 		if self.HP <= 0:
 			self.die(death_reason)
-		print(f"HP: {self.HP}/20")
+		self.print_health()
+		
+	def gain_exp(self, amount):
+		amount = round_stochastic(amount)
+		if amount <= 0:
+			return
+		self.EXP += amount
+		print(f"+{amount} EXP")
+		old_level = self.level
+		while get_exp_required_for_level(self.level) <= self.EXP:
+			self.level += 1
+		if self.level > old_level:
+			cprint(f"You have reached level {self.level}!", "green")
+		print(f"Current EXP: {self.EXP}/{get_exp_required_for_level(self.level)}")
 		
 	def die(self, death_reason=None):
 		print("You died!")
@@ -480,7 +517,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 						minables.add("Lapis Lazuli Ore", 3)
 						minables.add("Gold Ore", 7)
 						minables.add("Diamond Ore", 3)
-						num = int((explosion_power * random.uniform(0.75, 1.25)) ** 2) + 1
+						num = int((explosion_power * random.uniform(0.75, 1.25)) ** 2.2) + 1
 						found = {}
 						for _ in range(num):
 							if not one_in(3):
@@ -630,11 +667,20 @@ while True:
 						minables.add("Raw Gold", 7)
 						minables.add("Diamond", 3)
 				found = minables.pick()
+				if found == "Coal":
+					exp_gain = random.randint(0, 2)
+				elif found == "Lapis Lazuli":
+					exp_gain = random.randint(2, 5)
+				elif found == "Diamond":
+					exp_gain = random.randint(3, 7)
+				else:
+					exp_gain = 0	
 				if found == "Lapis Lazuli":
 					quantity = random.randint(4, 9)
 				else:
 					quantity = 1
 				print(f"You found {quantity}x {found}")
+				player.gain_exp(exp_gain)
 				player.add_item(found, quantity)
 				player.mod_food_exhaustion(0.005)
 				if found == "Stone":
@@ -657,9 +703,12 @@ while True:
 	elif choice == 7:
 		if player.has_item("Furnace"):
 			smeltable = {
-				"Raw Iron": "Iron Ingot",
-				"Iron Ore": "Iron Ingot",
-				"Coal Ore": "Coal"
+				"Raw Iron": ("Iron Ingot", 0.7),
+				"Iron Ore": ("Iron Ingot", 0.7),
+				"Coal Ore": ("Coal", 0.1),
+				"Raw Mutton": ("Cooked Mutton", 0.35),
+				"Raw Porkchop": ("Cooked Porkchop", 0.35),
+				"Raw Chicken": ("Cooked Chicken", 0.35)
 			}
 			fuel_sources = {
 				"Coal": 80,
@@ -680,7 +729,7 @@ while True:
 					all_sources = item_sources + tool_sources
 					choice = choice_input(*all_sources)
 					source = all_sources[choice - 1]
-					dur = fuel_sources[source]
+					dur, exp = fuel_sources[source]
 					is_tool = source in tool_sources
 					print("Smelting...")
 					time.sleep(dur / 10)
@@ -696,6 +745,7 @@ while True:
 					player.remove_item(smelted, 1)
 					player.add_item(smelt_into)
 					print(f"You got 1x {smelt_into}")
+					player.gain_exp(exp)
 				else:
 					print("You don't have anything to smelt")
 			else:

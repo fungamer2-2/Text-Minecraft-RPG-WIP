@@ -3,12 +3,24 @@
 		"hunger": 3,
 		"saturation": 1.8
 	},
+	"Cooked Porkchop": {
+		"hunger": 8,
+		"saturation": 12.8
+	},
 	"Raw Mutton": {
 		"hunger": 2,
 		"saturation": 1.2
 	},
+	"Cooked Mutton": {
+		"hunger": 6,
+		"saturation": 9.6
+	},
 	"Raw Chicken": {
 		"hunger": 2,
 		"saturation": 1.2
+	},
+	"Cooked Chicken": {
+		"hunger": 6,
+		"saturation": 7.2
 	}
 }
