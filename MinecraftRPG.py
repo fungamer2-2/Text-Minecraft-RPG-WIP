@@ -474,13 +474,12 @@ def random_battle(player, night_mob, action_verb="exploring"):
 					player.damage(damage, "Killed by a creeper's explosion")
 					explosion_power = mob.attack_strength // 7
 					if action_verb == "mining":
-						minables.add("Stone", 3000)
+						minables.add("Stone", 3000) #Explosions drop the block instead of the item
 						minables.add("Coal Ore", 124)
 						minables.add("Iron Ore", 72)
 						minables.add("Lapis Lazuli Ore", 3)
 						minables.add("Gold Ore", 7)
 						minables.add("Diamond Ore", 3)
-						minables.add("Redstone Ore", 25)
 						num = int((explosion_power * random.uniform(0.75, 1.25)) ** 2) + 1
 						found = {}
 						for _ in range(num):
@@ -658,7 +657,9 @@ while True:
 	elif choice == 7:
 		if player.has_item("Furnace"):
 			smeltable = {
-				"Raw Iron": "Iron Ingot"
+				"Raw Iron": "Iron Ingot",
+				"Iron Ore": "Iron Ingot",
+				"Coal Ore": "Coal"
 			}
 			fuel_sources = {
 				"Coal": 80,
