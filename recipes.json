@@ -24,7 +24,17 @@
 		"components": [ ["Stone", 2], ["Stick", 1] ],
 		"tool_data": {
 			"damage": 5,
-			"durability": 131,
+			"durability": 132,
+			"attack_speed": 1.6
+		}
+	},
+	
+	"Iron Sword": {
+		"quantity": 1,
+		"components": [ ["Iron Ingot", 2], ["Stick", 1] ],
+		"tool_data": {
+			"damage": 6,
+			"durability": 251,
 			"attack_speed": 1.6
 		}
 	},
@@ -45,6 +55,16 @@
 		"tool_data": {
 			"damage": 3,
 			"durability": 132,
+			"attack_speed": 1.2
+		}
+	},
+	
+	"Iron Pickaxe": {
+		"quantity": 1,
+		"components": [ ["Iron Ingot", 3], ["Stick", 2] ],
+		"tool_data": {
+			"damage": 4,
+			"durability": 251,
 			"attack_speed": 1.2
 		}
 	},
