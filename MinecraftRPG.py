@@ -722,30 +722,32 @@ while True:
 				if can_smelt:
 					print("Smelt which item?")
 					strings = list(map(lambda s: f"{s} -> {smeltable[s][0]}", can_smelt))
+					strings.append("Cancel")
 					choice = choice_input(*strings)
-					smelted = can_smelt[choice - 1]
-					smelt_into, exp = smeltable[smelted]
-					print("Which fuel source to use?")
-					all_sources = item_sources + tool_sources
-					choice = choice_input(*all_sources)
-					source = all_sources[choice - 1]
-					dur = fuel_sources[source]
-					is_tool = source in tool_sources
-					print("Smelting...")
-					time.sleep(dur / 10)
-					player.advance_time(dur)
-					if is_tool:
-						tool = next((t for t in player.tools if t.name == source), None)
-						if tool is not None:
-							player.tools.remove(tool)
+					if choice <= len(can_smelt):
+						smelted = can_smelt[choice - 1]
+						smelt_into, exp = smeltable[smelted]
+						print("Which fuel source to use?")
+						all_sources = item_sources + tool_sources
+						choice = choice_input(*all_sources)
+						source = all_sources[choice - 1]
+						dur = fuel_sources[source]
+						is_tool = source in tool_sources
+						print("Smelting...")
+						time.sleep(dur / 10)
+						player.advance_time(dur)
+						if is_tool:
+							tool = next((t for t in player.tools if t.name == source), None)
+							if tool is not None:
+								player.tools.remove(tool)
+							else:
+								cprint("Could not find the tool to remove", "yellow")
 						else:
-							cprint("Could not find the tool to remove", "yellow")
-					else:
-						player.remove_item(source, 1)
-					player.remove_item(smelted, 1)
-					player.add_item(smelt_into)
-					print(f"You got 1x {smelt_into}")
-					player.gain_exp(exp)
+							player.remove_item(source, 1)
+						player.remove_item(smelted, 1)
+						player.add_item(smelt_into)
+						print(f"You got 1x {smelt_into}")
+						player.gain_exp(exp)
 				else:
 					print("You don't have anything to smelt")
 			else:
