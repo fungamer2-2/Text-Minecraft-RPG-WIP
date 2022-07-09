@@ -484,7 +484,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 				if run == 0:
 					print(f"The {mob_name} stops running.")
 			player.mod_food_exhaustion(0.1)
-			if run > 0 and x_in_y(3, 10):
+			if run > 0 and not one_in(3) and x_in_y(1, player.attack_speed() + 1):
 				print(f"You miss the {mob_name} attacking it while it was fleeing.")
 			else:			
 				damage = player.attack_damage()
