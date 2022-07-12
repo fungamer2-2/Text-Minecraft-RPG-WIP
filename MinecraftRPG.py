@@ -341,7 +341,7 @@ class Player:
 				self.mod_food_exhaustion(6)
 		if self.hunger <= 0 and one_in(8):
 			cprint("You are starving!", "red")
-			self.damage(1, physical=False)
+			self.damage(1, "Starved to death", False)
 		self.advance_time(0.5)
 	
 	def mod_food_exhaustion(self, amount):
