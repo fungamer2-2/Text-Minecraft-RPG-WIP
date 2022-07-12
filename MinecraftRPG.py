@@ -339,13 +339,17 @@ class Player:
 		if self.HP < 20:
 			if (self.hunger == 20 or (self.hunger >= 18 and one_in(8))) and self.heal(1):
 				self.mod_food_exhaustion(6)
+		if self.hunger <= 0 and one_in(8):
+			cprint("You are starving!", "red")
+			self.damage(1, physical=False)
 		self.advance_time(0.5)
 	
 	def mod_food_exhaustion(self, amount):
 		self.food_exhaustion += amount
 		if self.food_exhaustion >= 4:
 			if self.saturation == 0:
-				self.hunger -= 1
+				if self.hunger > 0:
+					self.hunger -= 1
 			else:
 				self.saturation -= 1
 			self.print_hunger()
