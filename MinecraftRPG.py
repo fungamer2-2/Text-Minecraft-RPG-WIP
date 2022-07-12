@@ -475,7 +475,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 	creeper_turn = 0
 	choice = choice_input("Attack", "Flee" if mob.behavior == MobBehaviorType.hostile else "Ignore")
 	if choice == 1:
-		if mob.behavior != MobBehaviorType.passive and len(player.tools) > 0 and yes_no("Would you like to switch weapons?"):
+		if len(player.tools) > 0 and yes_no("Would you like to switch weapons?"):
 			player.switch_weapon_menu()
 		run = 0
 		while True:
