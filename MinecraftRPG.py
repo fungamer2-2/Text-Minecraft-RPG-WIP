@@ -582,8 +582,9 @@ while True:
 	choice = choice_input("Explore", "Inventory", "Craft", "Switch Weapon", "Eat", "Mine", "Smelt")
 	if choice == 1:
 		print("You explore for a while.")
-		player.mod_food_exhaustion(0.001)
-		player.advance_time(random.randint(5, 20))
+		time_explore = random.randint(5, 20)
+		player.mod_food_exhaustion(0.001 * time_explore)
+		player.advance_time(time_explore)
 		mob_chance = 3 if player.time.is_night() else 8
 		if one_in(mob_chance):
 			random_battle(player, player.time.is_night())
