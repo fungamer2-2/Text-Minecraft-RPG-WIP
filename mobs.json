@@ -94,7 +94,7 @@
 	{
 		"name": "Spider",
 		"HP": 16,
-		"weight": 10,
+		"weight": 20,
 		"night_mob": true,
 		"behavior": "hostile",
 		"attack_strength": 2,
