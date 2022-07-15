@@ -263,6 +263,12 @@ class Time:
 			cprint("The sun begins to set", "blue")
 		elif last_mins < 38 and self.mins >= 38:
 			cprint("The sun begins to come up", "blue")
+			
+class StatusEffect:
+	
+	def __init__(self, level, duration):
+		self.level = level
+		self.duration = duration
 
 def get_exp_required_for_level(level):
 	assert level >= 0
@@ -271,7 +277,7 @@ def get_exp_required_for_level(level):
 	if level < 32:
 		return round(2.5 * level**2 - 40.5 * level + 360)
 	return round(4.5 * level**2 - 160.5 * level + 2220)
-	
+
 class Player:
 	
 	def __init__(self):
@@ -285,9 +291,28 @@ class Player:
 		self.EXP = 0
 		self.level = 0
 		self.time = Time()
+		self.status_effects = {}
+		
+	def get_effect_level(self, name):
+		if name not in self.status_effects:
+			return 0
+		return self.status_effects[name].level
+		
+	def apply_status_effect(self, name, level, duration):
+		cur_level = self.get_effect_level(name):
+		if cur_level == 0:
+			self.status_effects[name] = StatusEffect(level, duration)
+		elif level > cur_level:
+			effect_obj = self.status_effects[name]
+			effect_obj.level = level
+			effect_obj.duration = duration
 		
 	def advance_time(self, secs):
 		self.time.advance(secs)
+		for effect in list(self.status_effects.keys()): #Convert to list to save a snapshot of the keys so we can avoid RuntimeError due to changing the size during iteration
+			self.status_effects[effect].duration -= secs
+			if self.status_effects[effect] <= 0:
+				del self.status_effects[effect]
 		
 	def damage(self, amount, death_reason=None, physical=True):
 		if amount <= 0:
