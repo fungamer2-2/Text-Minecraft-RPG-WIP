@@ -7,5 +7,5 @@ A text-based command-line RPG based on Minecraft<br />
 You can explore, find mobs, craft items, etc.<br />
 Currently a work in progress
 
-To run the project, you just need to have a Python 3 Interpreter and the `termcolor` module (`pip install termcolor` to instal it).<br />
+To run the project, you just need to have a Python 3 Interpreter and the `termcolor` module (`pip install termcolor` to install it).<br />
 Ensure the json files and `splashes.txt` are in the same folder as `MinecraftRPG.py`, then run `MinecraftRPG.py`
