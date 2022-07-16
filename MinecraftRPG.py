@@ -299,6 +299,12 @@ class Player:
 		return self.status_effects[name].level
 		
 	def apply_status_effect(self, name, level, duration):
+		if name == "Instant Damage":
+			self.damage(3 * 2**level, death_reason="Killed by magic", physical=False)
+			return
+		if name == "Instant Health":
+			self.heal(2 * 2**level)
+			return
 		cur_level = self.get_effect_level(name):
 		if cur_level == 0:
 			self.status_effects[name] = StatusEffect(level, duration)
@@ -313,6 +319,11 @@ class Player:
 			self.status_effects[effect].duration -= secs
 			if self.status_effects[effect] <= 0:
 				del self.status_effects[effect]
+				
+	def tick_status_effect(self, name):
+		if name not in self.status_effects:
+			return
+		effect = self.status_effects[name]
 		
 	def damage(self, amount, death_reason=None, physical=True):
 		if amount <= 0:
@@ -647,7 +658,7 @@ while True:
 				components = info.components
 				string += ", ".join(f"{c[1]}x {c[0]}" for c in components)
 				print(string)
-				print()
+				print()		
 			print("What would you like to craft?")
 			item_name = input()
 			item = next((v for v in craftable if v[0] == item_name), None)
@@ -711,7 +722,7 @@ while True:
 				elif found == "Diamond":
 					exp_gain = random.randint(3, 7)
 				else:
-					exp_gain = 0	
+					exp_gain = 0
 				if found == "Lapis Lazuli":
 					quantity = random.randint(4, 9)
 				else:
