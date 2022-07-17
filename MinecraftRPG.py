@@ -305,7 +305,7 @@ class Player:
 		if name == "Instant Health":
 			self.heal(2 * 2**level)
 			return
-		cur_level = self.get_effect_level(name):
+		cur_level = self.get_effect_level(name)
 		if cur_level == 0:
 			self.status_effects[name] = StatusEffect(level, duration)
 		elif level > cur_level:
