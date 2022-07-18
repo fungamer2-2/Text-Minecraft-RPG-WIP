@@ -506,7 +506,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 	else:
 		choices = day_mob_types
 	mob = Mob.new_mob(choices.pick())
-	#mob = Mob.new_mob("Creeper")
+	#mob = Mob.new_mob("Wolf")
 	mob_name = mob.name.lower()
 	print(f"You found a {mob_name} while {action_verb}{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 	if mob.behavior == MobBehaviorType.hostile and not mob_name.endswith("creeper") and one_in(2):

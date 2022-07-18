@@ -13,12 +13,22 @@
 	{
 		"name": "Rabbit",
 		"HP": 3,
-		"weight": 5,
+		"weight": 4,
 		"behavior": "passive",
 		"death_drops": {
 			"Rabbit Hide": {"quantity": [0, 1]},
 			"Raw Rabbit": {"quantity": [0, 1]},
 			"Rabbit's Foot": {"quantity": 1, "chance": [1, 10]},
+			"EXP": {"quantity": [1, 3]}
+		}
+	},
+	{
+		"name": "Wolf",
+		"HP": 8,
+		"weight": 4,
+		"behavior": "neutral",
+		"attack_strength": 3,
+		"death_drops": {
 			"EXP": {"quantity": [1, 3]}
 		}
 	},
