@@ -11,7 +11,7 @@ Currently a work in progress.
 ## Installation
 `python3 MinecraftRPG.py`
 
-### Prerequisite
+### Prerequisites
 - have Python 3 installed
-- have `(termcolor)[https://pypi.org/project/termcolor/]` installed `(pip install term color)`
-Note - Makesure to have all the json files and `splashes.txt` in the same directory as MinecraftRPG.py
+- have [termcolor](https://pypi.org/project/termcolor/) installed (`pip install termcolor`)<br />
+Note - Make sure to have all the json files and `splashes.txt` in the same directory as MinecraftRPG.py
