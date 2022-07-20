@@ -3,9 +3,15 @@
 [![Total alerts](https://img.shields.io/lgtm/alerts/g/fungamer2-2/Text-Minecraft-RPG-WIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/fungamer2-2/Text-Minecraft-RPG-WIP/alerts/)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/fungamer2-2/Text-Minecraft-RPG-WIP.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/fungamer2-2/Text-Minecraft-RPG-WIP/context:python)
 
-A text-based command-line RPG based on Minecraft<br />
-You can explore, find mobs, craft items, etc.<br />
-Currently a work in progress
+## About
+A text-based command-line RPG game based on Minecraft<br />
+Go explore, find and fight mobs, craft items, etc.<br />
+Currently a work in progress.
 
-To run the project, you just need to have a Python 3 Interpreter and the `termcolor` module (`pip install termcolor` to install it).<br />
-Ensure the json files and `splashes.txt` are in the same folder as `MinecraftRPG.py`, then run `MinecraftRPG.py`
+## Installation
+`python3 MinecraftRPG.py`
+
+### Prerequisite
+- have Python 3 installed
+- have `(termcolor)[https://pypi.org/project/termcolor/]` installed `(pip install term color)`
+Note - Makesure to have all the json files and `splashes.txt` in the same directory as MinecraftRPG.py
