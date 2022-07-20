@@ -324,6 +324,14 @@ class Player:
 		if name not in self.status_effects:
 			return
 		effect = self.status_effects[name]
+		level = effect.level
+		if name == "Hunger":
+			self.mod_food_exhaustion(0.05 * level)
+		elif name == "Poison":
+			level = (level - 1) % 32 + 1
+			rate = max(1, 25 // 2**level)
+			amount = min(self.HP - 1, round_stochastic(20 / rate)) #Poison reduces us to 1 HP but doesn't kill us
+			self.damage(amount, physical=False)
 		
 	def damage(self, amount, death_reason=None, physical=True):
 		if amount <= 0:
