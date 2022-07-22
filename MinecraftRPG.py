@@ -623,8 +623,19 @@ while True:
 	if player.curr_weapon:
 		weapon = player.curr_weapon
 		print(f"Current weapon: {player.curr_weapon.name} - Durability {durability_message(weapon.durability, weapon.max_durability)}")
-	choice = choice_input("Explore", "Inventory", "Craft", "Switch Weapon", "Eat", "Mine", "Smelt")
-	if choice == 1:
+	options = ["Explore", "Inventory", "Craft"]
+	if len(player.tools) > 0:
+		options.append("Switch Weapon")
+	foods_in_inv = list(filter(lambda item: item in foods, player.inventory))
+	if foods_in_inv:
+		options.append("Eat")
+	has_pickaxe = any("Pickaxe" in tool.name for tool in player.tools)
+	if has_pickaxe:
+		options.append("Mine")
+	if player.has_item("Furnace"):
+		options.append("Smelt")
+	choice = choice_input(*options, return_text=True)
+	if choice == "Explore":
 		print("You explore for a while.")
 		time_explore = random.randint(5, 20)
 		player.mod_food_exhaustion(0.001 * time_explore)
@@ -639,7 +650,7 @@ while True:
 			found = random.choices(choices, weights=weights)[0]
 			print(f"You found 1x {found}")
 			player.add_item(found)
-	elif choice == 2:
+	elif choice == "Inventory":
 		if len(player.inventory) == 0:
 			print("There is nothing in your inventory")
 		else:
@@ -649,7 +660,7 @@ while True:
 			print("Your tools:")
 			for index, tool in enumerate(player.tools):
 				print(f"{index+1}. {tool.name} - Durability {tool.durability}/{tool.max_durability}")
-	elif choice == 3:
+	elif choice == "Craft":
 		craftable = []
 		for recipe in recipes:
 			info = recipes[recipe]
@@ -688,125 +699,110 @@ while True:
 				print(f"You have crafted {quantity}x {name}")
 			else:
 				print("Invalid item")
-	elif choice == 4:
-		if len(player.tools) > 0:
-			player.switch_weapon_menu()
-		else:
-			print("You don't have any weapons")
-	elif choice == 5:
-		foods_in_inv = list(filter(lambda item: item in foods, player.inventory))
-		if foods_in_inv:
-			choices = foods_in_inv + ["Cancel"]
-			print("Which food would you like to eat?")
-			num = choice_input(*choices)
-			if num <= len(foods_in_inv):
-				 food = foods_in_inv[num - 1]
-				 player.remove_item(food, 1)
-				 print(f"You eat the {food}.")
-				 saturation = foods[food]["saturation"]
-				 hunger = foods[food]["hunger"]
-				 player.restore_hunger(hunger, saturation)
-		else:
-			print("You don't have anything to eat")
-	elif choice == 6:
-		if any("Pickaxe" in tool.name for tool in player.tools):
-			if player.curr_weapon and "Pickaxe" in player.curr_weapon.name:
-				tiers = ["Wooden Pickaxe", "Stone Pickaxe", "Iron Pickaxe"]
-				tier_num = tiers.index(player.curr_weapon.name) + 1
-				minables = WeightedList()
-				minables.add("Stone", 2000)
-				minables.add("Coal", 124)
-				if tier_num > 1:
-					minables.add("Raw Iron", 72)
-					minables.add("Lapis Lazuli", 3)
-					if tier_num > 2:
-						minables.add("Raw Gold", 7)
-						minables.add("Diamond", 3)
-				found = minables.pick()
-				if found == "Coal":
-					exp_gain = random.randint(0, 2)
-				elif found == "Lapis Lazuli":
-					exp_gain = random.randint(2, 5)
-				elif found == "Diamond":
-					exp_gain = random.randint(3, 7)
-				else:
-					exp_gain = 0
-				if found == "Lapis Lazuli":
-					quantity = random.randint(4, 9)
-				else:
-					quantity = 1
-				print(f"You found {quantity}x {found}")
-				player.gain_exp(exp_gain)
-				player.add_item(found, quantity)
-				player.mod_food_exhaustion(0.005)
-				if found == "Stone":
-					base_mine_time = 1.5
-				else:
-					base_mine_time = 3
-				mine_mult = player.curr_weapon.mining_mult
-				mine_time = round(base_mine_time / mining_mult, 2)
-				player.advance_time(random.randint(1, 3))
-				player.decrement_tool_durability()
-				mob_chance = 10 if player.time.is_night() else 15
-				mob_chance *= math.sqrt(mine_mult)
-				mob_chance = round(mob_chance)
-				if one_in(mob_chance):
-					random_battle(player, True, "mining")
+	elif choice == "Switch Weapon":
+		player.switch_weapon_menu()
+	elif choice == "Eat":
+		choices = foods_in_inv + ["Cancel"]
+		print("Which food would you like to eat?")
+		num = choice_input(*choices)
+		if num <= len(foods_in_inv):
+			 food = foods_in_inv[num - 1]
+			 player.remove_item(food, 1)
+			 print(f"You eat the {food}.")
+			 saturation = foods[food]["saturation"]
+			 hunger = foods[food]["hunger"]
+			 player.restore_hunger(hunger, saturation)
+	elif choice == "Mine":
+		if player.curr_weapon and "Pickaxe" in player.curr_weapon.name:
+			tiers = ["Wooden Pickaxe", "Stone Pickaxe", "Iron Pickaxe"]
+			tier_num = tiers.index(player.curr_weapon.name) + 1
+			minables = WeightedList()
+			minables.add("Stone", 2000)
+			minables.add("Coal", 124)
+			if tier_num > 1:
+				minables.add("Raw Iron", 72)
+				minables.add("Lapis Lazuli", 3)
+				if tier_num > 2:
+					minables.add("Raw Gold", 7)
+					minables.add("Diamond", 3)
+			found = minables.pick()
+			if found == "Coal":
+				exp_gain = random.randint(0, 2)
+			elif found == "Lapis Lazuli":
+				exp_gain = random.randint(2, 5)
+			elif found == "Diamond":
+				exp_gain = random.randint(3, 7)
 			else:
-				print("You need to switch to your pickaxe to mine")
+				exp_gain = 0
+			if found == "Lapis Lazuli":
+				quantity = random.randint(4, 9)
+			else:
+				quantity = 1
+			print(f"You found {quantity}x {found}")
+			player.gain_exp(exp_gain)
+			player.add_item(found, quantity)
+			player.mod_food_exhaustion(0.005)
+			if found == "Stone":
+				base_mine_time = 1.5
+			else:
+				base_mine_time = 3
+			mine_mult = player.curr_weapon.mining_mult
+			mine_time = round(base_mine_time / mining_mult, 2)
+			player.advance_time(mine_time)
+			player.decrement_tool_durability()
+			mob_chance = 10 if player.time.is_night() else 15
+			mob_chance *= math.sqrt(mine_mult)
+			mob_chance = round(mob_chance)
+			if one_in(mob_chance):
+				random_battle(player, True, "mining")
 		else:
-			print("You can't mine without a pickaxe")
-	elif choice == 7:
-		if player.has_item("Furnace"):
-			smeltable = {
-				"Raw Iron": ("Iron Ingot", 0.7),
-				"Iron Ore": ("Iron Ingot", 0.7),
-				"Coal Ore": ("Coal", 0.1),
-				"Raw Mutton": ("Cooked Mutton", 0.35),
-				"Raw Porkchop": ("Cooked Porkchop", 0.35),
-				"Raw Chicken": ("Cooked Chicken", 0.35)
-			}
-			fuel_sources = {
-				"Coal": 80,
-				"Wooden Pickaxe": 10,
-				"Wooden Sword": 10
-			}
-			item_sources = list(filter(lambda item: item in player.inventory, fuel_sources))
-			tool_sources = list(filter(lambda tool: any(t.name == tool for t in player.tools), fuel_sources))
-			if player.has_any_item(item_sources) or player.has_any_tool(tool_sources):
-				can_smelt = list(filter(lambda item: item in smeltable, player.inventory))
-				if can_smelt:
-					print("Smelt which item?")
-					strings = list(map(lambda s: f"{s} -> {smeltable[s][0]}", can_smelt))
-					strings.append("Cancel")
-					choice = choice_input(*strings)
-					if choice <= len(can_smelt):
-						smelted = can_smelt[choice - 1]
-						smelt_into, exp = smeltable[smelted]
-						print("Which fuel source to use?")
-						all_sources = item_sources + tool_sources
-						choice = choice_input(*all_sources)
-						source = all_sources[choice - 1]
-						dur = fuel_sources[source]
-						is_tool = source in tool_sources
-						print("Smelting...")
-						time.sleep(dur / 10)
-						player.advance_time(dur)
-						if is_tool:
-							tool = next((t for t in player.tools if t.name == source), None)
-							if tool is not None:
-								player.tools.remove(tool)
-							else:
-								cprint("Could not find the tool to remove", "yellow")
+			print("You need to switch to your pickaxe to mine")
+	elif choice == "Smelt":
+		smeltable = {
+			"Raw Iron": ("Iron Ingot", 0.7),
+			"Iron Ore": ("Iron Ingot", 0.7),
+			"Coal Ore": ("Coal", 0.1),
+			"Raw Mutton": ("Cooked Mutton", 0.35),
+			"Raw Porkchop": ("Cooked Porkchop", 0.35),
+			"Raw Chicken": ("Cooked Chicken", 0.35)
+		}
+		fuel_sources = {
+			"Coal": 80,
+			"Wooden Pickaxe": 10,
+			"Wooden Sword": 10
+		}
+		item_sources = list(filter(lambda item: item in player.inventory, fuel_sources))
+		tool_sources = list(filter(lambda tool: any(t.name == tool for t in player.tools), fuel_sources))
+		if player.has_any_item(item_sources) or player.has_any_tool(tool_sources):
+			can_smelt = list(filter(lambda item: item in smeltable, player.inventory))
+			if can_smelt:
+				print("Smelt which item?")
+				strings = list(map(lambda s: f"{s} -> {smeltable[s][0]}", can_smelt))
+				strings.append("Cancel")
+				choice = choice_input(*strings)
+				if choice <= len(can_smelt):
+					smelted = can_smelt[choice - 1]
+					smelt_into, exp = smeltable[smelted]
+					print("Which fuel source to use?")
+					all_sources = item_sources + tool_sources
+					choice = choice_input(*all_sources)
+					source = all_sources[choice - 1]
+					dur = fuel_sources[source]
+					is_tool = source in tool_sources
+					print("Smelting...")
+					time.sleep(dur / 10)
+					player.advance_time(dur)
+					if is_tool:
+						tool = next((t for t in player.tools if t.name == source), None)
+						if tool is not None:
+							player.tools.remove(tool)
 						else:
-							player.remove_item(source, 1)
-						player.remove_item(smelted, 1)
-						player.add_item(smelt_into)
-						print(f"You got 1x {smelt_into}")
-						player.gain_exp(exp)
-				else:
-					print("You don't have anything to smelt")
+							cprint("Could not find the tool to remove; this shouldn't happen", "yellow")
+					else:
+						player.remove_item(source, 1)
+					player.remove_item(smelted, 1)
+					player.add_item(smelt_into)
+					print(f"You got 1x {smelt_into}")
+					player.gain_exp(exp)
 			else:
-				print("You need a fuel source to smelt items")
-		else:
-			print("You need a furnace to smelt items")	
+				print("You don't have anything to smelt")
