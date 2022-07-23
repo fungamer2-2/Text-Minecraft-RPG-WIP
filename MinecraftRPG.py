@@ -97,7 +97,7 @@ mobs_dict = json.load(open("mobs.json"))
 
 class MobType:
 	
-	def __init__(self, name, weight, max_hp, behavior: MobBehaviorType, death_drops, night_mob, attack_strength):
+	def __init__(self, name, weight, max_hp, behavior: MobBehaviorType, death_drops, night_mob, attack_strength, spawns_naturally):
 		self.name = name
 		self.weight = weight
 		self.hp = max_hp
@@ -105,6 +105,7 @@ class MobType:
 		self.death_drops = death_drops
 		self.night_mob = night_mob
 		self.attack_strength = attack_strength
+		self.spawns_naturally = True
 		
 	@staticmethod
 	def from_dict(d):
@@ -133,7 +134,8 @@ class MobType:
 			if "quantity" in data and not (isinstance(data["quantity"], int) or (isinstance(data["quantity"], list) and len(data["quantity"]) == 2)):
 				raise TypeError("quantity muat be an int or a 2-item list")
 		night_mob = d.get("night_mob", False)
-		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength)
+		spawns_naturally = d.get("spawns_naturally", True)
+		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength, spawns_naturally)
 
 mob_types = {}
 
@@ -147,10 +149,11 @@ day_mob_types = WeightedList()
 night_mob_types = WeightedList()
 for typ in mob_types:
 	mob_type = mob_types[typ]
-	if mob_type.night_mob:
-		night_mob_types.add(typ, mob_type.weight)
-	else:
-		day_mob_types.add(typ, mob_type.weight)
+	if mob_type.spawns_naturally:
+		if mob_type.night_mob:
+			night_mob_types.add(typ, mob_type.weight)
+		else:
+			day_mob_types.add(typ, mob_type.weight)
 
 class Mob:
 	
