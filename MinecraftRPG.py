@@ -62,7 +62,41 @@ def choice_input(*choices, return_text=False):
 def yes_no(message):
 	m = input(message + " (Y/N) ")
 	return len(m) > 0 and m[0].lower() == "y"
+
+class JSONDict(dict):
 	
+	def __init__(self, d={}):
+		super().__init__(d)
+		for key in self:
+			if type(self[key]) == dict:
+				self[key] = self.__class__(self[key])
+	
+	def __missing__(self, key):
+		raise ValueError(f"missing required field {key!r}")
+	
+	def gettype(self, key, typ):
+		value = self[key]
+		if isinstance(value, typ):
+			return value
+		else:
+			raise TypeError(f"field {key!r} expected value of type {typ.__name__!r}, but got {value.__class__.__name__!r}")
+		
+	def gettype_or_default(self, key, typ, default=None):
+		if key not in self:
+			return default
+		return self.gettype(key, typ)
+		
+def json_dict(func):
+	if type(func) == staticmethod:
+		 func = func.__get__(object)
+	def wrapper(d, *args, **kwargs):
+		if type(d) != JSONDict:
+			 d = JSONDict(d)
+		return func(d, *args, **kwargs)
+	return wrapper
+	
+NoneType = type(None)
+
 class MobBehaviorType(Enum):
 	passive = 0 #Passive; won't attack even if attacked
 	neutral = 1 #Neutral; will become hostile if attacked
@@ -106,13 +140,14 @@ class MobType:
 		self.night_mob = night_mob
 		self.attack_strength = attack_strength
 		self.spawns_naturally = True
-		
+	
+	@json_dict	
 	@staticmethod
 	def from_dict(d):
-		name = d["name"]
-		HP = d["HP"]
-		b = d["behavior"]
-		weight = d["weight"]
+		name = d.gettype("name", str)
+		HP = d.gettype("HP", int)
+		b = d.gettype("behavior", str)
+		weight = d.gettype("weight", int)
 		if b == "passive":
 			behavior = MobBehaviorType.passive
 		elif b == "neutral":
@@ -121,20 +156,18 @@ class MobType:
 			behavior = MobBehaviorType.hostile
 		else:
 			raise ValueError(f"Invalid behavior type {b!r}")
-		attack_strength = d.get("attack_strength")
+		attack_strength = d.gettype_or_default("attack_strength", int)
 		if attack_strength is None and b != "passive":
 			raise ValueError("Non-passive mobs require an attack strength")
-		death_drops = d.get("death_drops", {})
+		death_drops = d.gettype_or_default("death_drops", JSONDict, JSONDict())
 		for drop in death_drops:
-			data = death_drops[drop]
-			if not isinstance(data, dict):
-				raise TypeError("Each entry in death_drops must be a dict")
+			data = death_drops.gettype(drop, dict)
 			if "chance" in data and (not isinstance(data["chance"], list) or len(data["chance"]) != 2):
 				raise TypeError("chance must be a 2-item list")
 			if "quantity" in data and not (isinstance(data["quantity"], int) or (isinstance(data["quantity"], list) and len(data["quantity"]) == 2)):
 				raise TypeError("quantity muat be an int or a 2-item list")
-		night_mob = d.get("night_mob", False)
-		spawns_naturally = d.get("spawns_naturally", True)
+		night_mob = d.gettype_or_default("night_mob", bool, False)
+		spawns_naturally = d.gettype_or_default("spawns_naturally", bool, True)
 		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength, spawns_naturally)
 
 mob_types = {}
@@ -207,12 +240,13 @@ class ToolData:
 		self.attack_speed = attack_speed
 		self.mining_mult = mining_mult
 	
+	@json_dict
 	@staticmethod	
 	def from_dict(d):
-		damage = d.get("damage", 1)
-		durability = d["durability"]
-		attack_speed = d.get("attack_speed", 4)
-		mining_mult = d.get("mining_mult", 1)
+		damage = d.gettype_or_default("damage", int, 1)
+		durability = d.gettype("durability", int)
+		attack_speed = d.gettype_or_default("attack_speed", (int, float), 4)
+		mining_mult = d.gettype_or_default("mining_mult", (int, float), 1)
 		return ToolData(damage, durability, attack_speed, mining_mult)	
 
 class Recipe:
@@ -221,12 +255,13 @@ class Recipe:
 		self.quantity = quantity
 		self.components = components
 		self.tool_data = tool_data
-		
+	
+	@json_dict	
 	@staticmethod
 	def from_dict(d):
-		quantity = d.get("quantity", 1)
-		components = d["components"]
-		tool_data = d.get("tool_data")
+		quantity = d.gettype_or_default("quantity", int, 1)
+		components = d.gettype("components", list)
+		tool_data = d.gettype_or_default("tool_data", JSONDict)
 		if tool_data:
 			tool_data = ToolData.from_dict(tool_data)
 		return Recipe(quantity, components, tool_data)
