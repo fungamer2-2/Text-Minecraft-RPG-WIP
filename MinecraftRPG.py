@@ -95,8 +95,6 @@ def json_dict(func):
 		return func(d, *args, **kwargs)
 	return wrapper
 	
-NoneType = type(None)
-
 class MobBehaviorType(Enum):
 	passive = 0 #Passive; won't attack even if attacked
 	neutral = 1 #Neutral; will become hostile if attacked
