@@ -590,10 +590,11 @@ def random_battle(player, night_mob, action_verb="exploring"):
 				if mob.HP <= 0:
 					break
 				if mob.behavior == MobBehaviorType.passive:
-					if not one_in(3) and run == 0:
+					if not one_in(damage + 1) and run == 0:
 						print(f"The {mob_name} starts running away.")
 						run += random.randint(3, 5)
 			attack_speed = player.attack_speed() #Attack speed controls the chance of being attacked by a mob when we attack
+			time.sleep(random.uniform(0.75, 1.25) / attack_speed)
 			if mob_name.endswith("creeper"):
 				creeper_turn += 1
 				if creeper_turn > 2 and not one_in(creeper_turn - 1): #Increasing chance to explode after the first 2 turns
@@ -673,7 +674,8 @@ while True:
 	choice = choice_input(*options, return_text=True)
 	if choice == "Explore":
 		print("You explore for a while.")
-		time_explore = random.randint(5, 20)
+		time_explore = random.randint(15, 20)
+		time.sleep(time_explore / 20)
 		player.mod_food_exhaustion(0.001 * time_explore)
 		player.advance_time(time_explore)
 		mob_chance = 3 if player.time.is_night() else 8
@@ -774,6 +776,8 @@ while True:
 				quantity = random.randint(4, 9)
 			else:
 				quantity = 1
+			print("Mining...")
+			time.sleep(random.uniform(0.75, 1.5))
 			print(f"You found {quantity}x {found}")
 			player.gain_exp(exp_gain)
 			player.add_item(found, quantity)
@@ -842,3 +846,5 @@ while True:
 					player.gain_exp(exp)
 			else:
 				print("You don't have anything to smelt")
+		else:
+			print("You need a fuel source to smelt items")
