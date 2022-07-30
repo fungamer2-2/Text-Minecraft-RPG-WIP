@@ -327,6 +327,7 @@ class Player:
 		self.EXP = 0
 		self.level = 0
 		self.time = Time()
+		self.ticks = 0
 		self.status_effects = {}
 		
 	def get_effect_level(self, name):
@@ -416,10 +417,11 @@ class Player:
 		return False
 	 
 	def tick(self):
+		self.ticks += 1
 		if self.HP < 20:
-			if (self.hunger == 20 or (self.hunger >= 18 and one_in(8))) and self.heal(1):
+			if (self.hunger == 20 or (self.hunger >= 18 and self.ticks % 8 == 0)) and self.heal(1):
 				self.mod_food_exhaustion(6)
-		if self.hunger <= 0 and one_in(8):
+		if self.hunger <= 0 and self.ticks % 8 == 0:
 			cprint("You are starving!", "red")
 			self.damage(1, "Starved to death", False)
 		self.advance_time(0.5)
