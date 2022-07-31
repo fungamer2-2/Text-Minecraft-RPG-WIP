@@ -145,7 +145,8 @@ class MobType:
 		name = d.gettype("name", str)
 		HP = d.gettype("HP", int)
 		b = d.gettype("behavior", str)
-		weight = d.gettype("weight", int)
+		spawns_naturally = d.gettype_or_default("spawns_naturally", bool, True) 
+		weight = d.gettype("weight", int) if spawns_naturally else 0
 		if b == "passive":
 			behavior = MobBehaviorType.passive
 		elif b == "neutral":
@@ -165,7 +166,6 @@ class MobType:
 			if "quantity" in data and not (isinstance(data["quantity"], int) or (isinstance(data["quantity"], list) and len(data["quantity"]) == 2)):
 				raise TypeError("quantity muat be an int or a 2-item list")
 		night_mob = d.gettype_or_default("night_mob", bool, False)
-		spawns_naturally = d.gettype_or_default("spawns_naturally", bool, True)
 		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength, spawns_naturally)
 
 mob_types = {}
