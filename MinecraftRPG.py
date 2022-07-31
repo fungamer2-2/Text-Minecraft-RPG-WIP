@@ -421,7 +421,7 @@ class Player:
 		if self.HP < 20:
 			if (self.hunger == 20 or (self.hunger >= 18 and self.ticks % 8 == 0)) and self.heal(1):
 				self.mod_food_exhaustion(6)
-		if self.hunger <= 0 and self.ticks % 8 == 0:
+		if self.hunger <= 0 and self.ticks % 8 == 0::
 			cprint("You are starving!", "red")
 			self.damage(1, "Starved to death", False)
 		self.advance_time(0.5)
@@ -558,6 +558,9 @@ def random_battle(player, night_mob, action_verb="exploring"):
 	if mob.behavior == MobBehaviorType.hostile and not mob_name.endswith("creeper") and one_in(2):
 		cprint(f"The {mob_name} attacks you!", "red")
 		player.damage(mob.attack_strength)
+	if mob.name == "Chicken" and one_in(20):
+		print("You got 1x Egg")
+		player.add_item("Egg")
 	creeper_turn = 0
 	choice = choice_input("Attack", "Flee" if mob.behavior == MobBehaviorType.hostile else "Ignore")
 	if choice == 1:
@@ -643,7 +646,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 			choice = choice_input("Attack", "Ignore" if mob.behavior == MobBehaviorType.passive else "Flee")
 			if choice == 2:
 				return
-
+				
 splashes = open("splashes.txt").read().splitlines()
 
 print("MINCERAFT" if one_in(10000) else "MINECRAFT") #An extremely rare easter egg
