@@ -62,6 +62,7 @@
 		"attack_strength": 5,
 		"death_drops": {
 			"Rotten Flesh": {"quantity": [0, 2]},
+			"Iron Ingot": {"chance": [1, 40]},
 			"EXP": {"quantity": 5}
 		}
 	},
@@ -74,7 +75,23 @@
 		"attack_strength": 5,
 		"death_drops": {
 			"Rotten Flesh": {"quantity": [0, 2]},
+			"Iron Ingot": {"chance": [1, 40]},
 			"EXP": {"quantity": 12}
+		}
+	},
+	{
+		"name": "Chicken Jockey",
+		"HP": 24,
+		"spawns_naturally": false,
+		"night_mob": true,
+		"behavior": "hostile",
+		"attack_strength": 5,
+		"death_drops": {
+			"Rotten Flesh": {"quantity": [0, 2]},
+			"Raw Chicken": {"quantity": 1},
+			"Feather": {"quantity": [0, 2]},
+			"Iron Ingot": {"chance": [1, 40]},
+			"EXP": {"quantity": 22}
 		}
 	},
 	{
