@@ -421,7 +421,7 @@ class Player:
 		if self.HP < 20:
 			if (self.hunger == 20 or (self.hunger >= 18 and self.ticks % 8 == 0)) and self.heal(1):
 				self.mod_food_exhaustion(6)
-		if self.hunger <= 0 and self.ticks % 8 == 0::
+		if self.hunger <= 0 and self.ticks % 8 == 0:
 			cprint("You are starving!", "red")
 			self.damage(1, "Starved to death", False)
 		self.advance_time(0.5)
