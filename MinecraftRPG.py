@@ -72,19 +72,27 @@ class JSONDict(dict):
 				self[key] = self.__class__(self[key])
 	
 	def __missing__(self, key):
-		raise ValueError(f"missing required field {key!r}")
+		raise JSONError(f"missing required field {key!r}", self)
 	
 	def gettype(self, key, typ):
 		value = self[key]
 		if isinstance(value, typ):
 			return value
 		else:
-			raise TypeError(f"field {key!r} expected value of type {typ.__name__!r}, but got {value.__class__.__name__!r}")
+			raise JSONError(f"field {key!r} expected value of type {typ.__name__!r}, but got {value.__class__.__name__!r}", self)
 		
 	def gettype_or_default(self, key, typ, default=None):
 		if key not in self:
 			return default
 		return self.gettype(key, typ)
+		
+class JSONError(Exception):
+		
+	def __init__(self, message, context=None):
+		msg = message
+		if context:
+			msg += f"\n\nJSON Context: \n{json.dumps(context)}"
+		super().__init__(msg)
 		
 def json_dict(func):
 	if type(func) == staticmethod:
@@ -154,17 +162,17 @@ class MobType:
 		elif b == "hostile":
 			behavior = MobBehaviorType.hostile
 		else:
-			raise ValueError(f"Invalid behavior type {b!r}")
+			raise JSONError(f"Invalid behavior type {b!r}", d)
 		attack_strength = d.gettype_or_default("attack_strength", int)
 		if attack_strength is None and b != "passive":
-			raise ValueError("Non-passive mobs require an attack strength")
+			raise JSONError("Non-passive mobs require an attack strength", d)
 		death_drops = d.gettype_or_default("death_drops", JSONDict, JSONDict())
 		for drop in death_drops:
-			data = death_drops.gettype(drop, dict)
+			data = death_drops.gettype(drop, JSONDict)
 			if "chance" in data and (not isinstance(data["chance"], list) or len(data["chance"]) != 2):
-				raise TypeError("chance must be a 2-item list")
+				raise JSONError("chance must be a 2-item list", dict)
 			if "quantity" in data and not (isinstance(data["quantity"], int) or (isinstance(data["quantity"], list) and len(data["quantity"]) == 2)):
-				raise TypeError("quantity muat be an int or a 2-item list")
+				raise JSONError("quantity muat be an int or a 2-item list", dict)
 		night_mob = d.gettype_or_default("night_mob", bool, False)
 		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength, spawns_naturally)
 
@@ -213,12 +221,11 @@ class Mob:
 				r = self.death_drops[drop]
 				q = r.get("quantity", 1)
 				x, y = r.get("chance", [1, 1])
+				assert isinstance(q, (list, int))	
 				if isinstance(q, list):
 					amount = random.randint(*q)
 				elif isinstance(q, int):
 					amount = q
-				else:
-					raise TypeError("Amount must be an int or a 2-item list")
 				if amount > 0 and x_in_y(x, y):
 					if drop == "EXP":
 						player.gain_exp(amount)
