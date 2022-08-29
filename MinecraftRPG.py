@@ -179,14 +179,6 @@ class MobType:
 			if "quantity" in drop and not (isinstance(drop["quantity"], int) or (isinstance(drop["quantity"], list) and len(drop["quantity"]) == 2)):
 				raise JSONError("quantity muat be an int or a 2-item list", drop)	
 			
-		#death_drops = d.gettype_or_default("death_drops", JSONDict, JSONDict())
-#		for drop in death_drops:
-#			data = death_drops.gettype(drop, JSONDict)
-#			if "chance" in data and (not isinstance(data["chance"], list) or len(data["chance"]) != 2):
-#				raise JSONError("chance must be a 2-item list", data)
-#			if "quantity" in data and not (isinstance(data["quantity"], int) or (isinstance(data["quantity"], list) and len(data["quantity"]) == 2)):
-#				raise JSONError("quantity muat be an int or a 2-item list", data)
-
 		night_mob = d.gettype_or_default("night_mob", bool, False)
 		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength, spawns_naturally)
 
