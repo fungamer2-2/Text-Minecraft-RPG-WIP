@@ -31,6 +31,12 @@ def one_in(x):
 def x_in_y(x, y):
 	"Returns True with a probability of x/y, otherwise returns False"
 	return random.uniform(0, y) < x
+	
+def binomial(num, x, y=100):
+	if x == 1 and isinstance(y, int):
+		return sum(1 for _ in range(num) if one_in(y))
+	else:
+		return sum(1 for _ in range(num) if x_in_y(x, y))
 
 def round_stochastic(value):
 	"""Randomly rounds a number up or down, based on its decimal part
@@ -178,7 +184,6 @@ class MobType:
 				raise JSONError("chance must be a 2-item list", drop) 
 			if "quantity" in drop and not (isinstance(drop["quantity"], int) or (isinstance(drop["quantity"], list) and len(drop["quantity"]) == 2)):
 				raise JSONError("quantity muat be an int or a 2-item list", drop)	
-			
 		night_mob = d.gettype_or_default("night_mob", bool, False)
 		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength, spawns_naturally)
 
@@ -631,7 +636,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 					damage = max(random.randint(1, mob.attack_strength) for _ in range(3)) #attack_strength defines explosion power for creepers
 					print("The creeper explodes!")
 					player.damage(damage, "Killed by a creeper's explosion")
-					explosion_power = mob.attack_strength // 7
+					explosion_power = 6 if mob.name == "Charged Creeper" else 3
 					if action_verb == "mining":
 						minables.add("Stone", 3000) #Explosions drop the block instead of the item
 						minables.add("Coal Ore", 124)
@@ -639,10 +644,10 @@ def random_battle(player, night_mob, action_verb="exploring"):
 						minables.add("Lapis Lazuli Ore", 3)
 						minables.add("Gold Ore", 7)
 						minables.add("Diamond Ore", 3)
-						num = int((explosion_power * random.uniform(0.75, 1.25)) ** 2.2) + 1
+						num = int((explosion_power * random.uniform(0.75, 1.25)) ** 2) + 1
 						found = {}
 						for _ in range(num):
-							if not one_in(3):
+							if one_in(explosion_power):
 								s = minables.pick()
 								if s in found:
 									found[s] += 1
@@ -656,9 +661,17 @@ def random_battle(player, night_mob, action_verb="exploring"):
 					else:
 						grass = random.randint(explosion_power // 3, explosion_power) + 1
 						dirt = int((explosion_power * random.uniform(0.75, 1.25)) ** 2) + 1
+						grass = binomial(grass, 1, explosion_power)
+						dirt = binomial(dirt, 1, explosion_power)
 						player.add_item("Dirt", dirt)
 						player.add_item("Grass", grass)
-						print(f"You got {grass}x Grass and {dirt}x Dirt from the explosion")
+						if grass > 0:
+							if dirt > 0:
+								print(f"You got {grass}x Grass and {dirt}x Dirt from the explosion")
+							else:
+								print(f"You got {grass}x Grass from the explosion")
+						elif dirt > 0:
+							print(f"You got {dirt}x Dirt from the explosion")
 					break
 				else:
 					print("The creeper flashes...")
