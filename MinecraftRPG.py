@@ -632,7 +632,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 			time.sleep(random.uniform(0.75, 1.25) / attack_speed)
 			if mob_name.endswith("creeper"):
 				creeper_turn += 1
-				if creeper_turn > 2 and not one_in(creeper_turn - 1): #Increasing chance to explode after the first 2 turns
+				if creeper_turn > 2 and not one_in(creeper_turn): #Increasing chance to explode after the first 2 turns
 					damage = max(random.randint(1, mob.attack_strength) for _ in range(3)) #attack_strength defines explosion power for creepers
 					print("The creeper explodes!")
 					player.damage(damage, "Killed by a creeper's explosion")
