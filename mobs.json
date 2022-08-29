@@ -39,7 +39,8 @@
 		"behavior": "neutral",
 		"attack_strength": 4.5,
 		"death_drops": {
-			"EXP": {"quantity": [1, 3]}
+			"EXP": {"quantity": 5},
+			"Ender Pearl": {"quantity": [0, 1]}
 		}
 	},
 	{
