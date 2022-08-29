@@ -4,23 +4,23 @@
 		"HP": 8,
 		"weight": 10,
 		"behavior": "passive",
-		"death_drops": {
-			"Wool": {"quantity": 1},
-			"Raw Mutton": {"quantity": [1, 2]},
-			"EXP": {"quantity": [1, 3]}
-		}
+		"death_drops": [
+			{"item": "Wool", "quantity": 1},
+			{"item": "Raw Mutton", "quantity": [1, 2]},
+			{"item": "EXP", "quantity": [1, 3]}
+		]
 	},
 	{
 		"name": "Rabbit",
 		"HP": 3,
 		"weight": 4,
 		"behavior": "passive",
-		"death_drops": {
-			"Rabbit Hide": {"quantity": [0, 1]},
-			"Raw Rabbit": {"quantity": [0, 1]},
-			"Rabbit's Foot": {"quantity": 1, "chance": [1, 10]},
-			"EXP": {"quantity": [1, 3]}
-		}
+		"death_drops": [
+			{"item": "Rabbit Hide", "quantity": [0, 1]},
+			{"item": "Raw Rabbit", "quantity": [0, 1]},
+			{"item": "Rabbit's Foot", "quantity": 1, "chance": [1, 10]},
+			{"item": "EXP", "quantity": [1, 3]}
+		]
 	},
 	{
 		"name": "Wolf",
@@ -28,9 +28,9 @@
 		"weight": 4,
 		"behavior": "neutral",
 		"attack_strength": 3,
-		"death_drops": {
-			"EXP": {"quantity": [1, 3]}
-		}
+		"death_drops": [
+			{"item": "EXP", "quantity": [1, 3]}
+		]
 	},
 	{
 		"name": "Enderman",
@@ -38,31 +38,31 @@
 		"weight": 1,
 		"behavior": "neutral",
 		"attack_strength": 4.5,
-		"death_drops": {
-			"EXP": {"quantity": 5},
-			"Ender Pearl": {"quantity": [0, 1]}
-		}
+		"death_drops": [
+			{"item": "EXP", "quantity": 5},
+			{"item": "Ender Pearl", "quantity": [0, 1]}
+		]
 	},
 	{
 		"name": "Pig",
 		"HP": 10,
 		"weight": 10,
 		"behavior": "passive",
-		"death_drops": {
-			"Raw Porkchop": {"quantity": [1, 3]},
-			"EXP": {"quantity": [1, 3]}
-		}
+		"death_drops": [
+			{"item": "Raw Porkchop", "quantity": [1, 3]},
+			{"item": "EXP", "quantity": 5}
+		]
 	},
 	{
 		"name": "Chicken",
 		"HP": 4,
 		"weight": 10,
 		"behavior": "passive",
-		"death_drops": {
-			"Raw Chicken": {"quantity": 1},
-			"Feather": {"quantity": [0, 2]},
-			"EXP": {"quantity": [1, 3]}
-		}
+		"death_drops": [
+			{"item": "Raw Chicken", "quantity": 1},
+			{"item": "Feather", "quantity": [0, 2]},
+			{"item": "EXP", "quantity": [1, 3]}
+		]
 	},
 	{
 		"name": "Zombie",
@@ -71,11 +71,11 @@
 		"night_mob": true,
 		"behavior": "hostile",
 		"attack_strength": 5,
-		"death_drops": {
-			"Rotten Flesh": {"quantity": [0, 2]},
-			"Iron Ingot": {"chance": [1, 40]},
-			"EXP": {"quantity": 5}
-		}
+		"death_drops": [
+			{"item": "Rotten Flesh", "quantity": [0, 2]},
+			{"item": ["Iron Ingot", "Carrot", "Potato"], "chance": [1, 40]},
+			{"item": "EXP", "quantity": 5}
+		]
 	},
 	{
 		"name": "Baby Zombie",
@@ -84,11 +84,10 @@
 		"night_mob": true,
 		"behavior": "hostile",
 		"attack_strength": 5,
-		"death_drops": {
-			"Rotten Flesh": {"quantity": [0, 2]},
-			"Iron Ingot": {"chance": [1, 40]},
-			"EXP": {"quantity": 12}
-		}
+		"death_drops": [
+			{"item": "Rotten Flesh", "quantity": [0, 2]},
+			{"item": "EXP", "quantity": 12}
+		]
 	},
 	{
 		"name": "Chicken Jockey",
@@ -97,13 +96,13 @@
 		"night_mob": true,
 		"behavior": "hostile",
 		"attack_strength": 5,
-		"death_drops": {
-			"Rotten Flesh": {"quantity": [0, 2]},
-			"Raw Chicken": {"quantity": 1},
-			"Feather": {"quantity": [0, 2]},
-			"Iron Ingot": {"chance": [1, 40]},
-			"EXP": {"quantity": 22}
-		}
+		"death_drops": [
+			{"item": "Rotten Flesh", "quantity": [0, 2]},
+			{"item": "Raw Chicken", "quantity": 1},
+			{"item": "Feather", "quantity": [0, 2]},
+			{"item": ["Iron Ingot", "Carrot", "Potato"], "chance": [1, 40]},
+			{"item": "EXP", "quantity": 22}
+		]
 	},
 	{
 		"name": "Creeper",
@@ -112,10 +111,10 @@
 		"night_mob": true,
 		"behavior": "hostile",
 		"attack_strength": 22,
-		"death_drops": {
-			"Gunpowder": {"quantity": [0, 2]},
-			"EXP": {"quantity": 5}
-		}
+		"death_drops": [
+			{"item": "Gunpowder", "quantity": [0, 2]},
+			{"item": "EXP", "quantity": 5}
+		]
 	},
 	{
 		"name": "Charged Creeper",
@@ -124,10 +123,10 @@
 		"night_mob": true,
 		"behavior": "hostile",
 		"attack_strength": 43,
-		"death_drops": {
-			"Gunpowder": {"quantity": [0, 2]},
-			"EXP": {"quantity": 5}
-		}
+		"death_drops": [
+			{"item": "Gunpowder", "quantity": [0, 2]},
+			{"item": "EXP", "quantity": 5}
+		]
 	},
 	{
 		"name": "Spider",
@@ -136,10 +135,10 @@
 		"night_mob": true,
 		"behavior": "hostile",
 		"attack_strength": 2,
-		"death_drops": {
-			"String": {"quantity": [0, 2]},
-			"EXP": {"quantity": 5},
-			"Spider Eye": {"chance": [1, 3]}
-		}
+		"death_drops": [
+			{"item": "String", "quantity": [0, 2]},
+			{"item": "EXP", "quantity": 5},
+			{"item": "Spider Eye", "chance": [1, 3]}
+		]
 	}
 ]

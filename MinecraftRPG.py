@@ -168,13 +168,25 @@ class MobType:
 		attack_strength = d.gettype_or_default("attack_strength", float)
 		if attack_strength is None and b != "passive":
 			raise JSONError("Non-passive mobs require an attack strength", d)
-		death_drops = d.gettype_or_default("death_drops", JSONDict, JSONDict())
+		death_drops = d.gettype_or_default("death_drops", list, [])
 		for drop in death_drops:
-			data = death_drops.gettype(drop, JSONDict)
-			if "chance" in data and (not isinstance(data["chance"], list) or len(data["chance"]) != 2):
-				raise JSONError("chance must be a 2-item list", dict)
-			if "quantity" in data and not (isinstance(data["quantity"], int) or (isinstance(data["quantity"], list) and len(data["quantity"]) == 2)):
-				raise JSONError("quantity muat be an int or a 2-item list", dict)
+			drop = JSONDict(drop)
+			if not isinstance(drop, dict):
+				raise JSONError("Each entry in death_drops must be a dict", drop)
+			item = drop.gettype("item", (str, list))	
+			if "chance" in drop and (not isinstance(drop["chance"], list) or len(drop["chance"]) != 2):
+				raise JSONError("chance must be a 2-item list", drop) 
+			if "quantity" in drop and not (isinstance(drop["quantity"], int) or (isinstance(drop["quantity"], list) and len(drop["quantity"]) == 2)):
+				raise JSONError("quantity muat be an int or a 2-item list", drop)	
+			
+		#death_drops = d.gettype_or_default("death_drops", JSONDict, JSONDict())
+#		for drop in death_drops:
+#			data = death_drops.gettype(drop, JSONDict)
+#			if "chance" in data and (not isinstance(data["chance"], list) or len(data["chance"]) != 2):
+#				raise JSONError("chance must be a 2-item list", data)
+#			if "quantity" in data and not (isinstance(data["quantity"], int) or (isinstance(data["quantity"], list) and len(data["quantity"]) == 2)):
+#				raise JSONError("quantity muat be an int or a 2-item list", data)
+
 		night_mob = d.gettype_or_default("night_mob", bool, False)
 		return MobType(name, weight, HP, behavior, death_drops, night_mob, attack_strength, spawns_naturally)
 
@@ -220,19 +232,21 @@ class Mob:
 		if self.death_drops:
 			got = {}
 			for drop in self.death_drops:
-				r = self.death_drops[drop]
-				q = r.get("quantity", 1)
-				x, y = r.get("chance", [1, 1])
+				item = drop["item"]
+				if isinstance(item, list):
+					item = random.choice(item)
+				q = drop.get("quantity", 1)
+				x, y = drop.get("chance", [1, 1])
 				assert isinstance(q, (list, int))	
 				if isinstance(q, list):
 					amount = random.randint(*q)
 				elif isinstance(q, int):
 					amount = q
 				if amount > 0 and x_in_y(x, y):
-					if drop == "EXP":
+					if item == "EXP":
 						player.gain_exp(amount)
 					else:
-						got[drop] = amount
+						got[item] = amount
 			if got:
 				print("You got: ")
 				for item in got:

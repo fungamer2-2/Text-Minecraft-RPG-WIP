@@ -22,5 +22,13 @@
 	"Cooked Chicken": {
 		"hunger": 6,
 		"saturation": 7.2
+	},
+	"Carrot": {
+		"hunger": 3,
+		"saturation": 3.6
+	},
+	"Potato": {
+		"hunger": 1,
+		"saturation": 0.6
 	}
 }
