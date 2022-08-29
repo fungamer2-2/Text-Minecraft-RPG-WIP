@@ -76,6 +76,8 @@ class JSONDict(dict):
 	
 	def gettype(self, key, typ):
 		value = self[key]
+		if typ == float:
+			typ = (float, int)
 		if isinstance(value, typ):
 			return value
 		else:
@@ -163,7 +165,7 @@ class MobType:
 			behavior = MobBehaviorType.hostile
 		else:
 			raise JSONError(f"Invalid behavior type {b!r}", d)
-		attack_strength = d.gettype_or_default("attack_strength", int)
+		attack_strength = d.gettype_or_default("attack_strength", float)
 		if attack_strength is None and b != "passive":
 			raise JSONError("Non-passive mobs require an attack strength", d)
 		death_drops = d.gettype_or_default("death_drops", JSONDict, JSONDict())
@@ -559,11 +561,12 @@ def random_battle(player, night_mob, action_verb="exploring"):
 	else:
 		choices = day_mob_types
 	mob = Mob.new_mob(choices.pick())
-	#mob = Mob.new_mob("Chicken Jockey")
+	#mob = Mob.new_mob("Enderman")
 	if mob.name == "Baby Zombie" and one_in(20):
 		mob = Mob.new_mob("Chicken Jockey")
 	mob_name = mob.name.lower()
-	print(f"You found a {mob_name} while {action_verb}{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
+	a_an = "an" if mob_name[0] in "aeiou" else "a"
+	print(f"You found {a_an} {mob_name} while {action_verb}{'!' if mob.behavior == MobBehaviorType.hostile else '.'}")
 	if mob.behavior == MobBehaviorType.hostile and not mob_name.endswith("creeper") and one_in(2):
 		cprint(f"The {mob_name} attacks you!", "red")
 		player.damage(mob.attack_strength)
@@ -582,8 +585,13 @@ def random_battle(player, night_mob, action_verb="exploring"):
 				if run == 0:
 					print(f"The {mob_name} stops running.")
 			player.mod_food_exhaustion(0.1)
-			if one_in(8):
-				print(f"You swing at the {mob_name} but miss.")
+			is_enderman = mob.name == "Enderman"
+			miss_chance = 4 if is_enderman else 8
+			if one_in(miss_chance):
+				if is_enderman:
+					print(f"You swing at the {mob_name} but it teleports away.")
+				else:
+					print(f"You swing at the {mob_name} but miss.")
 			elif run > 0 and not one_in(3) and x_in_y(1, player.attack_speed() + 1):
 				flee_miss_messages = [
 					"You try to attack the {} while it was fleeing, and miss.",
@@ -650,7 +658,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 					print("The creeper flashes...")
 			elif mob.behavior != MobBehaviorType.passive and x_in_y(1, attack_speed) and not one_in(8): #I use x_in_y instead of one_in because x_in_y works with floats
 				print(f"The {mob_name} attacks you!")
-				player.damage(mob.attack_strength)
+				player.damage(round_stochastic(mob.attack_strength))
 			player.tick()
 			choice = choice_input("Attack", "Ignore" if mob.behavior == MobBehaviorType.passive else "Flee")
 			if choice == 2:
