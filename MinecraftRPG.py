@@ -597,7 +597,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 					print(f"The {mob_name} stops running.")
 			player.mod_food_exhaustion(0.1)
 			is_enderman = mob.name == "Enderman"
-			miss_chance = 4 if is_enderman else 8
+			miss_chance = 6 if is_enderman else 10
 			if one_in(miss_chance):
 				if is_enderman:
 					print(f"You swing at the {mob_name} but it teleports away.")
