@@ -798,7 +798,7 @@ while True:
 			tiers = ["Wooden Pickaxe", "Stone Pickaxe", "Iron Pickaxe"]
 			tier_num = tiers.index(player.curr_weapon.name) + 1
 			minables = WeightedList()
-			minables.add("Stone", 2000)
+			minables.add("Stone", 1500)
 			minables.add("Coal", 124)
 			if tier_num > 1:
 				minables.add("Raw Iron", 72)
@@ -821,21 +821,25 @@ while True:
 				quantity = 1
 			print("Mining...")
 			time.sleep(random.uniform(0.75, 1.5))
-			print(f"You found {quantity}x {found}")
-			player.gain_exp(exp_gain)
-			player.add_item(found, quantity)
-			player.mod_food_exhaustion(0.005)
-			if found == "Stone":
-				base_mine_time = 1.5
+			if found == "Stone" and one_in(3):
+				print("You didn't find much of value")
+				player.advance_time(3)
 			else:
-				base_mine_time = 3
-			mine_mult = player.curr_weapon.mining_mult
-			mine_time = round(base_mine_time / mining_mult, 2)
-			player.advance_time(mine_time)
-			player.decrement_tool_durability()
-			mob_chance = 10 if player.time.is_night() else 15
-			mob_chance *= math.sqrt(mine_mult)
-			mob_chance = round(mob_chance)
+				print(f"You found {quantity}x {found}")
+				player.gain_exp(exp_gain)
+				player.add_item(found, quantity)
+				player.mod_food_exhaustion(0.005)
+				if found == "Stone":
+					base_mine_time = 1.5
+				else:
+					base_mine_time = 3
+				mine_mult = player.curr_weapon.mining_mult
+				mine_time = round(base_mine_time / mining_mult, 2)
+				player.advance_time(mine_time)
+				player.decrement_tool_durability()
+				mob_chance = 10 if player.time.is_night() else 15
+				mob_chance *= math.sqrt(mine_mult)
+				mob_chance = round(mob_chance)
 			if one_in(mob_chance):
 				random_battle(player, True, "mining")
 		else:
