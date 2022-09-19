@@ -581,7 +581,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 	if mob.behavior == MobBehaviorType.hostile and not mob_name.endswith("creeper") and one_in(2):
 		cprint(f"The {mob_name} attacks you!", "red")
 		player.damage(mob.attack_strength)
-	if mob.name == "Chicken" and one_in(20):
+	if mob.name == "Chicken" and one_in(15):
 		print("You got 1x Egg")
 		player.add_item("Egg")
 	creeper_turn = 0
@@ -597,7 +597,7 @@ def random_battle(player, night_mob, action_verb="exploring"):
 					print(f"The {mob_name} stops running.")
 			player.mod_food_exhaustion(0.1)
 			is_enderman = mob.name == "Enderman"
-			miss_chance = 6 if is_enderman else 10
+			miss_chance = 5 if is_enderman else 10
 			if one_in(miss_chance):
 				if is_enderman:
 					print(f"You swing at the {mob_name} but it teleports away.")
@@ -821,6 +821,10 @@ while True:
 				quantity = 1
 			print("Mining...")
 			time.sleep(random.uniform(0.75, 1.5))
+			mine_mult = player.curr_weapon.mining_mult
+			mob_chance = 10 if player.time.is_night() else 15
+			mob_chance *= math.sqrt(mine_mult)
+			mob_chance = round(mob_chance)
 			if found == "Stone" and one_in(3):
 				print("You didn't find much of value")
 				player.advance_time(3)
@@ -833,13 +837,9 @@ while True:
 					base_mine_time = 1.5
 				else:
 					base_mine_time = 3
-				mine_mult = player.curr_weapon.mining_mult
 				mine_time = round(base_mine_time / mining_mult, 2)
 				player.advance_time(mine_time)
 				player.decrement_tool_durability()
-				mob_chance = 10 if player.time.is_night() else 15
-				mob_chance *= math.sqrt(mine_mult)
-				mob_chance = round(mob_chance)
 			if one_in(mob_chance):
 				random_battle(player, True, "mining")
 		else:
